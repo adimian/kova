@@ -1,0 +1,14 @@
+.DS_Store
+.coverage
+.dockerignore
+.editorconfig
+.env
+.git
+.gitignore
+.gitlab-ci.yml
+.idea
+.mypy_cache
+.pre-commit-config.yaml
+.pytest_cache
+.vscode
+*.env

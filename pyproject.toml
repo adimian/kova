@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "kova"
+version = "0.1.0"
+description = "Message-based framework for buildling resilient mobile backends"
+authors = ["Eric Gazoni <eric@adimian.com>"]
+license = "Apache License, Version 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+nats-py = "^2.2.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.6"}
+asyncpg = "^0.27.0"
+protobuf = "^4.22.1"
+minio = "^7.1.13"
+alembic = "^1.10.2"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+pytest-cov = "^4.0.0"
+pdbpp = "^0.10.3"
+pre-commit = "^3.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
