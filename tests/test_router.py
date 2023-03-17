@@ -19,8 +19,8 @@ class Msg:
 async def test_handler_can_be_defined_for_route():
     router = Router()
 
-    @router.route("test.handler", message_type=LoginRequest)
-    async def handle_login(message, reply: Reply):
+    @router.subscribe("test.handler")
+    async def handle_login(message: LoginRequest, reply: Reply):
         if reply:
             await reply(f"hello {message.email}".encode())
 
@@ -34,7 +34,7 @@ async def test_router_can_evaluate_messages(queue):
     req = LoginRequest()
     req.email = "hello@acme.test"
 
-    @router.route("test.handler", message_type=LoginRequest)
+    @router.subscribe("test.handler")
     async def handle_login(
         message: LoginRequest,
         reply: Reply,
