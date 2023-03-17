@@ -3,7 +3,7 @@ from collections import deque, defaultdict
 from typing import Type, TypeAlias
 
 from nats.aio.client import Client as NATSClient
-from nats.aio.msg import Msg
+from nats.aio.msg import Msg as NATSMsg
 
 from .types import Message, Reply, Publish
 
@@ -69,7 +69,7 @@ class Route:
     async def __call__(
         self,
         context: Context,
-        msg: Msg,
+        msg: NATSMsg,
     ):
         message = self.message_type.FromString(msg.data)
 
