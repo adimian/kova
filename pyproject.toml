@@ -11,9 +11,11 @@ python = "^3.10"
 nats-py = "^2.2.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.6"}
 asyncpg = "^0.27.0"
-protobuf = "^4.22.1"
+protobuf = "^4.21.6"
 minio = "^7.1.13"
 alembic = "^1.10.2"
+pydantic = {extras = ["email"], version = "^1.10.6"}
+cryptography = "^39.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -21,6 +23,7 @@ black = "^23.1.0"
 pytest-cov = "^4.0.0"
 pdbpp = "^0.10.3"
 pre-commit = "^3.1.1"
+pytest-asyncio = "^0.20.3"
 
 [build-system]
 requires = ["poetry-core"]

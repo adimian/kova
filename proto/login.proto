@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package login;
+
+message LoginRequest {
+  string email = 1;
+  optional string mfa_code = 2;
+}
+
+message LoginResponse {
+  string refresh_token = 1;
+}
+
+message AccessTokenRequest {
+  string refresh_token = 1;
+}
+
+message AccessTokenResponse {
+  string access_token = 1;
+}
