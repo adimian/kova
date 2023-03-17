@@ -39,7 +39,7 @@ class Database(BaseSettings):
         values: dict[str, Any],
     ) -> Any:
         if v:
-            return v
+            return v  # pragma: no cover
         else:
             return PostgresDsn.build(
                 scheme="postgresql",
@@ -113,6 +113,6 @@ def get_settings() -> Settings:
     return settings
 
 
-def show():
+def show():  # pragma: no cover
     settings = Settings()
     pprint(settings.dict())
