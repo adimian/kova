@@ -69,7 +69,7 @@ class Router:
 
                 elif issubclass(atype, Message):
                     if message_parsed_as:
-                        warnings.warn(
+                        warnings.warn(  # pragma: no cover
                             f"There is only one message per handler call, "
                             f"and {message_parsed_as} has already "
                             f"been defined as the unmarshalling type. "
