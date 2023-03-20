@@ -1,3 +1,4 @@
+import warnings
 from collections import deque, defaultdict
 from typing import Type, TypeAlias, Callable, Any
 
@@ -41,33 +42,42 @@ class Router:
 
     async def dispatch(self, subject: str, msg: NATSMsg):
         if self.queue is None:
-            raise RuntimeError("router not bound to a queue")
+            raise RuntimeError("Router not bound to a queue")
+
+        async def publish(subject: str, payload: bytes):
+            await self.queue.publish(  # type: ignore
+                subject=subject, payload=payload
+            )
+
+        async def reply(payload: bytes):
+            await publish(subject=msg.reply, payload=payload)
+
+        message_parsed_as = None
 
         for route in self.routes.get(subject, []):
             kwargs: dict[str, Any] = {}
 
             for attr, atype in route.__annotations__.items():
                 if issubclass(atype, Publish):
-
-                    async def publish(subject: str, payload: bytes):
-                        await self.queue.publish(  # type: ignore
-                            subject=subject, payload=payload
-                        )
-
                     kwargs[attr] = publish
 
                 elif issubclass(atype, Reply):
                     if msg.reply:
-
-                        async def reply(payload: bytes):
-                            await publish(subject=msg.reply, payload=payload)
-
+                        kwargs[attr] = reply
                     else:
-                        reply = None  # type: ignore
-
-                    kwargs[attr] = reply
+                        kwargs[attr] = None
 
                 elif issubclass(atype, Message):
+                    if message_parsed_as:
+                        warnings.warn(
+                            f"There is only one message per handler call, "
+                            f"and {message_parsed_as} has already "
+                            f"been defined as the unmarshalling type. "
+                            f"You might want to check if "
+                            f"using {atype} is also necessary."
+                        )
+                    else:
+                        message_parsed_as = atype
                     message = atype.FromString(msg.data)
                     kwargs[attr] = message
 
