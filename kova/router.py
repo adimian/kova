@@ -34,7 +34,7 @@ MessageType: TypeAlias = Type[Message]
 
 class Router:
     def __init__(self, queue: Queue | None = None):
-        self.routes: dict[str, list[Callable]] = defaultdict(list)
+        self.handlers: dict[str, list[Callable]] = defaultdict(list)
         self.queue = queue
 
     def bind(self, queue: Queue):
@@ -54,10 +54,10 @@ class Router:
 
         message_parsed_as = None
 
-        for route in self.routes.get(subject, []):
+        for handler in self.handlers.get(subject, []):
             kwargs: dict[str, Any] = {}
 
-            for attr, atype in route.__annotations__.items():
+            for attr, atype in handler.__annotations__.items():
                 if issubclass(atype, Publish):
                     kwargs[attr] = publish
 
@@ -81,11 +81,11 @@ class Router:
                     message = atype.FromString(msg.data)
                     kwargs[attr] = message
 
-            await route(**kwargs)
+            await handler(**kwargs)
 
     def subscribe(self, subject: str):
         def wrapper(func):
-            self.routes[subject].append(func)
+            self.handlers[subject].append(func)
             return func
 
         return wrapper

@@ -14,7 +14,7 @@ async def test_handler_can_be_defined_for_route():
     async def handle_login():
         pass
 
-    assert router.routes["test.handler"][0].__name__ == "handle_login"
+    assert router.handlers["test.handler"][0].__name__ == "handle_login"
 
 
 @pytest.mark.asyncio
