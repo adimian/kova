@@ -42,7 +42,10 @@ async def test_router_can_evaluate_messages(queue):
     ):
         if reply:
             await reply(f"hello {message.email}".encode())
-        publish("security.audit", f"{message.email} just logged in".encode())
+        await publish(
+            "security.audit",
+            f"{message.email} just logged in".encode(),
+        )
 
     await router.dispatch(
         subject="test.handler",
