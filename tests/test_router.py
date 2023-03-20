@@ -1,18 +1,9 @@
-import dataclasses
-
 import pytest
 
 from kova.protocol.login_pb2 import LoginRequest
 from kova.router import Publish, Reply
 from kova.server import Router
-
-
-@dataclasses.dataclass
-class Msg:
-    subject: str = ""
-    reply: str = ""
-    data: bytes = b""
-    headers: dict[str, str] | None = None
+from kova.types import Msg
 
 
 @pytest.mark.asyncio

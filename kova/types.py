@@ -1,3 +1,4 @@
+import dataclasses
 from typing import Callable, Awaitable, Optional, TypeAlias
 
 import google.protobuf.message as _message
@@ -15,3 +16,13 @@ class Publish:
 class Reply:
     def __call__(self, payload: bytes):
         raise NotImplementedError("you should not see this")
+
+
+@dataclasses.dataclass
+class Msg:
+    """used in unit-testing context to simulate NATS messages"""
+
+    subject: str = ""
+    reply: str = ""
+    data: bytes = b""
+    headers: dict[str, str] | None = None
