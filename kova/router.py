@@ -76,5 +76,6 @@ class Router:
     def subscribe(self, subject: str):
         def wrapper(func):
             self.routes[subject].append(func)
+            return func
 
         return wrapper
