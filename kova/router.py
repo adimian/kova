@@ -1,3 +1,4 @@
+import warnings
 from collections import deque, defaultdict
 from typing import Type, TypeAlias, Callable, Any
 
@@ -33,7 +34,7 @@ MessageType: TypeAlias = Type[Message]
 
 class Router:
     def __init__(self, queue: Queue | None = None):
-        self.routes: dict[str, list[Callable]] = defaultdict(list)
+        self.handlers: dict[str, list[Callable]] = defaultdict(list)
         self.queue = queue
 
     def bind(self, queue: Queue):
@@ -41,40 +42,50 @@ class Router:
 
     async def dispatch(self, subject: str, msg: NATSMsg):
         if self.queue is None:
-            raise RuntimeError("router not bound to a queue")
+            raise RuntimeError("Router not bound to a queue")
 
-        for route in self.routes.get(subject, []):
+        async def publish(subject: str, payload: bytes):
+            await self.queue.publish(  # type: ignore
+                subject=subject, payload=payload
+            )
+
+        async def reply(payload: bytes):
+            await publish(subject=msg.reply, payload=payload)
+
+        message_parsed_as = None
+
+        for handler in self.handlers.get(subject, []):
             kwargs: dict[str, Any] = {}
 
-            for attr, atype in route.__annotations__.items():
+            for attr, atype in handler.__annotations__.items():
                 if issubclass(atype, Publish):
-
-                    async def publish(subject: str, payload: bytes):
-                        await self.queue.publish(  # type: ignore
-                            subject=subject, payload=payload
-                        )
-
                     kwargs[attr] = publish
 
                 elif issubclass(atype, Reply):
                     if msg.reply:
-
-                        async def reply(payload: bytes):
-                            await publish(subject=msg.reply, payload=payload)
-
+                        kwargs[attr] = reply
                     else:
-                        reply = None  # type: ignore
-
-                    kwargs[attr] = reply
+                        kwargs[attr] = None
 
                 elif issubclass(atype, Message):
+                    if message_parsed_as:
+                        warnings.warn(  # pragma: no cover
+                            f"There is only one message per handler call, "
+                            f"and {message_parsed_as} has already "
+                            f"been defined as the unmarshalling type. "
+                            f"You might want to check if "
+                            f"using {atype} is also necessary."
+                        )
+                    else:
+                        message_parsed_as = atype
                     message = atype.FromString(msg.data)
                     kwargs[attr] = message
 
-            await route(**kwargs)
+            await handler(**kwargs)
 
     def subscribe(self, subject: str):
         def wrapper(func):
-            self.routes[subject].append(func)
+            self.handlers[subject].append(func)
+            return func
 
         return wrapper

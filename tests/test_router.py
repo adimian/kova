@@ -11,11 +11,10 @@ async def test_handler_can_be_defined_for_route():
     router = Router()
 
     @router.subscribe("test.handler")
-    async def handle_login(message: LoginRequest, reply: Reply):
-        if reply:
-            await reply(f"hello {message.email}".encode())
+    async def handle_login():
+        pass
 
-    assert router.routes["test.handler"][0].__name__ == "handle_login"
+    assert router.handlers["test.handler"][0].__name__ == "handle_login"
 
 
 @pytest.mark.asyncio
