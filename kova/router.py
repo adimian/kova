@@ -5,11 +5,7 @@ from typing import Type, TypeAlias, Callable, Any
 from nats.aio.client import Client as NATSClient
 from nats.aio.msg import Msg as NATSMsg
 
-from .types import Message, Reply, Publish
-
-
-class Context:
-    pass
+from .types import Message, Dependable
 
 
 class InMemoryQueue:
@@ -37,37 +33,32 @@ class Router:
         self.handlers: dict[str, list[Callable]] = defaultdict(list)
         self.queue = queue
 
+    def __repr__(self):
+        return f"<Router handlers: {len(self.handlers)}>"
+
+    def add_router(self, router: "Router"):
+        router.bind(queue=self.queue)
+        for route, handlers in router.handlers.items():
+            self.handlers[route].extend(handlers)
+
     def bind(self, queue: Queue):
         self.queue = queue
 
-    async def dispatch(self, subject: str, msg: NATSMsg):
+    async def dispatch(self, msg: NATSMsg, subject: str):
         if self.queue is None:
             raise RuntimeError("Router not bound to a queue")
 
-        async def publish(subject: str, payload: bytes):
-            await self.queue.publish(  # type: ignore
-                subject=subject, payload=payload
-            )
-
-        async def reply(payload: bytes):
-            await publish(subject=msg.reply, payload=payload)
-
         message_parsed_as = None
+        dependencies = tuple(Dependable.get_instances())
 
         for handler in self.handlers.get(subject, []):
             kwargs: dict[str, Any] = {}
 
+            attr: str
+            atype: type
+
             for attr, atype in handler.__annotations__.items():
-                if issubclass(atype, Publish):
-                    kwargs[attr] = publish
-
-                elif issubclass(atype, Reply):
-                    if msg.reply:
-                        kwargs[attr] = reply
-                    else:
-                        kwargs[attr] = None
-
-                elif issubclass(atype, Message):
+                if issubclass(atype, Message):
                     if message_parsed_as:
                         warnings.warn(  # pragma: no cover
                             f"There is only one message per handler call, "
@@ -80,11 +71,20 @@ class Router:
                         message_parsed_as = atype
                     message = atype.FromString(msg.data)
                     kwargs[attr] = message
+                elif issubclass(atype, dependencies):
+                    kwargs[attr] = atype.get_instance(  # type: ignore
+                        router=self,
+                        subject=subject,
+                        msg=msg,
+                    )
 
             await handler(**kwargs)
 
     def subscribe(self, subject: str):
         def wrapper(func):
+            for attr, atype in func.__annotations__.items():
+                pass  # we could perform some checks here
+
             self.handlers[subject].append(func)
             return func
 

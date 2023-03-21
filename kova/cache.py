@@ -2,6 +2,8 @@ import dataclasses
 
 from arrow import Arrow, now
 
+from kova.types import Dependable
+
 
 @dataclasses.dataclass
 class CacheEntry:
@@ -9,7 +11,11 @@ class CacheEntry:
     expire_at: Arrow | None
 
 
-class Cache:
+class Cache(Dependable):
+    @classmethod
+    def get_instance(cls, *, router, subject, msg):
+        return cls()
+
     def __init__(self):
         self._entries: dict[str, CacheEntry] = {}
 
@@ -40,3 +46,6 @@ class Cache:
             return entry.payload
         else:
             return None
+
+
+Dependable.register(Cache)
