@@ -1,6 +1,9 @@
 """
     This server serves back messages sent to `test.echo.cached`
     The reply will be the same for 5 seconds, after which it will be updated
+
+    $ python scripts/nats-pub.py --request test.echo.cached
+
 """
 from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
 from kova.server import Server, Router
