@@ -36,10 +36,15 @@ class Router:
     def __repr__(self):
         return f"<Router handlers: {len(self.handlers)}>"
 
+    def add_router(self, router: "Router"):
+        router.bind(queue=self.queue)
+        for route, handlers in router.handlers.items():
+            self.handlers[route].extend(handlers)
+
     def bind(self, queue: Queue):
         self.queue = queue
 
-    async def dispatch(self, subject: str, msg: NATSMsg):
+    async def dispatch(self, msg: NATSMsg, subject: str):
         if self.queue is None:
             raise RuntimeError("Router not bound to a queue")
 

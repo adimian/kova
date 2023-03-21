@@ -8,4 +8,4 @@ develop:
 
 
 proto:
-	protoc -I=./proto --python_out=./kova/protocol/ --pyi_out=./kova/protocol/stubs/ ./proto/*.proto
+	protoc -I=./proto --python_out=./kova/protocol/ --pyi_out=./kova/protocol/ ./proto/*.proto

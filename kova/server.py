@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import signal
 import sys
 
@@ -6,6 +7,8 @@ from nats.aio.client import Client as NatsClient
 from loguru import logger
 from kova.router import Router
 from kova.settings import Settings, get_settings
+
+from kova import echo
 
 
 class Server:
@@ -18,13 +21,16 @@ class Server:
     ):
         self.settings = settings
         self.queue = queue or NatsClient()
-        self.router = router or Router(queue=queue)
-
-        logger.success(f"Server started {self.queue=} {self.router=}")
+        self.router = router or Router(queue=self.queue)
 
     async def start(self, aloop):
+        if self.router.queue is None:
+            raise RuntimeError("Router not bound to a queue")
+
+        self.router.add_router(router=echo.router)
+
         async def error_cb(e):
-            logger.error("Error:", e)
+            logger.error(f"Error: {e}")
 
         async def closed_cb():
             logger.info("Connection to NATS is closed.")
@@ -45,10 +51,9 @@ class Server:
 
         await self.queue.connect(**options)
 
-        for subject, handlers in self.router.handlers.items():
-            for handler in handlers:
-                logger.info(f"Added subscription for {subject=} to {handler=}")
-                await self.queue.subscribe(subject=subject, cb=handler)
+        for subject in self.router.handlers:
+            handler = functools.partial(self.router.dispatch, subject=subject)
+            await self.queue.subscribe(subject=subject, cb=handler)
 
         def signal_handler():
             if self.queue.is_closed:
@@ -59,6 +64,8 @@ class Server:
 
         for sig in ("SIGINT", "SIGTERM"):
             aloop.add_signal_handler(getattr(signal, sig), signal_handler)
+
+        logger.success(f"Server started {self.queue=} {self.router=}")
 
 
 if __name__ == "__main__":
