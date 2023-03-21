@@ -2,7 +2,7 @@ import email_validator
 import pytest
 from cryptography.fernet import Fernet
 
-from kova.router import InMemoryQueue, Context
+from kova.router import InMemoryQueue
 from kova.server import Server
 from kova.settings import get_settings
 
@@ -23,11 +23,6 @@ def settings():
 @pytest.fixture
 def server(settings):
     return Server(settings=settings)
-
-
-@pytest.fixture
-def ctx():
-    return Context()
 
 
 @pytest.fixture

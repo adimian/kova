@@ -20,6 +20,7 @@ alembic = "^1.10.2"
 pydantic = {extras = ["email"], version = "^1.10.6"}
 cryptography = "^39.0.2"
 arrow = "^1.2.3"
+loguru = "^0.6.0"
 
 
 [tool.poetry.group.dev.dependencies]

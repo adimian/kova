@@ -8,10 +8,6 @@ from nats.aio.msg import Msg as NATSMsg
 from .types import Message, Dependable
 
 
-class Context:
-    pass
-
-
 class InMemoryQueue:
     def __init__(self):
         self._messages = defaultdict(deque)
@@ -36,6 +32,9 @@ class Router:
     def __init__(self, queue: Queue | None = None):
         self.handlers: dict[str, list[Callable]] = defaultdict(list)
         self.queue = queue
+
+    def __repr__(self):
+        return f"<Router handlers: {len(self.handlers)}>"
 
     def bind(self, queue: Queue):
         self.queue = queue
