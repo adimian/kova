@@ -5,7 +5,7 @@ from typing import Type, TypeAlias, Callable, Any
 from nats.aio.client import Client as NATSClient
 from nats.aio.msg import Msg as NATSMsg
 
-from .types import Message, Dependable
+from .our_types import Message, Dependable
 
 
 class InMemoryQueue:

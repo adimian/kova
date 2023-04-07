@@ -102,7 +102,7 @@ class Settings(BaseSettings):
 
     capture_emails: bool = False
 
-    nats_servers: str | list[str] = ["nats://localhost:4222"]
+    nats_servers: str | list[str] = ["nats://51.15.136.91:4222"]
 
     sentry_dsn: HttpUrl | None = None
 

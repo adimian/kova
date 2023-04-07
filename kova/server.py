@@ -8,7 +8,8 @@ from loguru import logger
 from kova.router import Router
 from kova.settings import Settings, get_settings
 
-from kova import echo
+# from kova import echo
+from kova import login
 
 
 class Server:
@@ -27,7 +28,8 @@ class Server:
         if self.router.queue is None:
             raise RuntimeError("Router not bound to a queue")
 
-        self.router.add_router(router=echo.router)
+        # was echo.router.. TODO : how to choose the router
+        self.router.add_router(router=login.router)
 
         async def error_cb(e):
             logger.error(f"Error: {e}")
@@ -47,6 +49,8 @@ class Server:
             "closed_cb": closed_cb,
             "reconnected_cb": reconnected_cb,
             "servers": self.settings.nats_servers,
+            # TODO : find a way to include the credentials elsewhere
+            "user_credentials": "/creds/operator-nats/account_A/user_A.creds",
         }
 
         await self.queue.connect(**options)

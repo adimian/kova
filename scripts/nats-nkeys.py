@@ -18,16 +18,16 @@ import sys
 
 import nats
 
-from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
+from kova.protocol.login_pb2 import LoginRequest, LoginResponse
 
 
 def show_usage():
     usage = """
-nats-pub [-s SERVER] <subject> <data>
+nats-nkeys [-s SERVER] <subject> <data>
 
 Example:
 
-nats-pub -s demo.nats.io greeting 'Hello World'
+nats-nkeys -s demo.nats.io greeting 'Hello World'
 """
     print(usage)
 
@@ -42,7 +42,7 @@ async def run():
 
     # e.g. nats-pub -s demo.nats.io hello "world"
     parser.add_argument("subject", default="hello", nargs="?")
-    parser.add_argument("-d", "--data", default="hello world")
+    parser.add_argument("-d", "--data", default="test@test")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
@@ -76,15 +76,15 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    req = EchoRequest()
-    req.message = data
+    req = LoginRequest()
+    req.email = data
     payload = req.SerializeToString()
 
     if args.request:
         response = await nc.request(args.subject, payload, timeout=10)
         print(f"Requested [{args.subject}] : '{data}'")
-        res = EchoResponse.FromString(response.data)
-        print(f"Got response: {res.message}")
+        res = LoginResponse.FromString(response.data)
+        print(f"Got response: {res.account_name}")
     else:
         await nc.publish(args.subject, payload)
         print(f"Published [{args.subject}] : '{data}'")

@@ -13,18 +13,29 @@ sequenceDiagram
     Server ->> Client: LoginResponse(refresh_token)
 ```
 
+```mermaid
+sequenceDiagram
+    Client ->> Server: LoginRequest(email)
+    Server ->> Mail Service: send_session_code(email, refresh_token/temporary mdp)
+    Client ->> Server: AccessTokenRequest(refresh_token/temporary mdp)
+    Server ->> Server: Verify refresh_token validity
+    Server ->> Server: Creation of user
+    Server ->> Client: AccessToken(seed/credentials)
+
+```
+
 ## Error handling
 
-### wrong email
+### Invalid email
 ```mermaid
 sequenceDiagram
     Client ->> Server: LoginRequest(email)
     Server ->> Mail Service: send_session_code(email, session_code)
-    Mail Service ->> Server: Error : invalid email
-    Server ->> Client : Error : invalid email... try again !
+    Mail Service ->> Server: Error("invalid email")
+    Server ->> Client : Error("invalid email")
 ```
 
-### mfa : wrong phone number
+### MFA : wrong phone number
 ```mermaid
 sequenceDiagram
     Client ->> Server: LoginRequest(email)
@@ -39,7 +50,7 @@ sequenceDiagram
     Server ->> Client: LoginResponse(refresh_token)
 ```
 
-### session_code invalid
+### Invalid session_code
 ```mermaid
 sequenceDiagram
     Client ->> Server: LoginRequest(email)
@@ -49,7 +60,7 @@ sequenceDiagram
     Server ->> Client: LoginResponse(mfa_required)
     Client ->> Server: LoginSessionRequest(session_code, mfa_code)
     end
-    Server ->> Client: error : invalid session_code
+    Server ->> Client: Error("invalid session_code")
 ```
 
 
@@ -64,20 +75,20 @@ sequenceDiagram
 ```
 ## Error handling
 
-### invalid token
+### Invalid refresh token
 ```mermaid
 sequenceDiagram
     Client ->> Server: AccessTokenRequest(refresh_token)
     Server ->> Server: Verify refresh_token validity
-    Server ->> Client: Error : invalid_token
+    Server ->> Client: Error("invalid_refresh_token")
 ```
 
-### missing token
+### Missing refresh token
 ```mermaid
 sequenceDiagram
     Client ->> Server: AccessTokenRequest(refresh_token)
     Server ->> Server: Verify refresh_token validity
-    Server ->> Client: Error : invalid_request
+    Server ->> Client: Error("missing_refresh_token")
 ```
 
 # Making authenticated calls
@@ -91,16 +102,16 @@ sequenceDiagram
 
 ## Error handling
 
-### invalid token
+### Invalid access token
 ```mermaid
 sequenceDiagram
     Client ->> Server: PerformAction({headers: access_token}, [params,...])
-    Server ->> Client: Error : invalid_token
+    Server ->> Client: Error("invalid_access_token")
 ```
 
-### missing token
+### Missing access token
 ```mermaid
 sequenceDiagram
     Client ->> Server: PerformAction({headers: access_token}, [params,...])
-    Server ->> Client: Error : missing_token
+    Server ->> Client: Error("missing_access_token")
 ```
