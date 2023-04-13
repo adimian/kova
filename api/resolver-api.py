@@ -1,41 +1,66 @@
 from fastapi import FastAPI, Response
+import os
+import uvicorn
+import argparse
 
-app = FastAPI()
+resolver_api = FastAPI()
 
-accounts = [
-    {"id": 1, "name": "John"},
-    {"id": 2, "name": "Phillip"},
-]
+param = argparse.ArgumentParser()
+param.add_argument(
+    "--pathToJWT",
+    type=str,
+    default="",
+    help="The path to the JWT files on your computer",
+)
+opt = param.parse_args()
 
-
-@app.get("/")
-def test():
-    return {"ça fonctionne ?": "maybe"}
-
-
-@app.get("/home")
-def index():
-    return {"message": "Hello World"}
+accounts = []
 
 
-@app.get("/accounts")
-def get_accounts():
-    # TODO : get all the files and give them
+def look_up_accounts(pathToJWT):
+    temp_accounts = os.listdir(pathToJWT)
+    for account in temp_accounts:
+        accounts.append(os.path.splitext(account)[0])
     return accounts
 
 
-@app.get("/accounts/{id}")
-def get_account(id: int, response: Response):
-    for account in accounts:
-        if account["id"] == id:
-            return account
-    response.status_code = 404
-    return "Product Not found"
+def write_jwt(pathToJWT: str, jwt: str, account: str):
+    file = open(pathToJWT + "/" + account + ".jwt", "w")
+    file.write(jwt)
 
 
-@app.post("/accounts")
-def create_account(account: dict, response: Response):
-    account["id"] = len(accounts) + 1
+@resolver_api.get("/")
+def test():
+    return {"message": "Hello World"}
+
+
+@resolver_api.get("/accounts")
+def get_accounts():
+    accounts = look_up_accounts(opt.pathToJWT)
+    return accounts
+
+
+@resolver_api.get("/accounts/{id}")
+def get_account(id: str, response: Response):
+    try:
+        contents = open(opt.pathToJWT + "/" + id + ".jwt").read()
+        print(contents)
+        contents = contents.strip()
+        return contents
+
+    except Exception as e:
+        print(e)
+        response.status_code = 404
+        return "Account Not found"
+
+
+@resolver_api.post("/accounts")
+def create_account(account: str, jwt: str, response: Response):
     accounts.append(account)
+    write_jwt(opt.pathToJWT, jwt, account)
     response.status_code = 201
-    return account
+    return accounts
+
+
+if __name__ == "__main__":
+    uvicorn.run(resolver_api, port=8000, host="0.0.0.0")
