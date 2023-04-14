@@ -15,7 +15,7 @@ import argparse
 
 param = argparse.ArgumentParser()
 param.add_argument(
-    "--pathToCred",
+    "--creds",
     type=str,
     default="",
     help="The path to the credential file on your computer",
@@ -23,7 +23,7 @@ param.add_argument(
 param.add_argument(
     "--queue",
     type=str,
-    default="",
+    default="echo",
     help="The name of the queue you want to use",
 )
 opt = param.parse_args()
@@ -71,7 +71,7 @@ class Server:
             "reconnected_cb": reconnected_cb,
             "servers": self.settings.nats_servers,
             # TODO : find a way to include the credentials elsewhere
-            "user_credentials": opt.pathToCred,
+            "user_credentials": opt.creds,
         }
 
         await self.queue.connect(**options)
