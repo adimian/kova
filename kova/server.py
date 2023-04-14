@@ -8,8 +8,25 @@ from loguru import logger
 from kova.router import Router
 from kova.settings import Settings, get_settings
 
-# from kova import echo
+from kova import echo
 from kova import login
+
+import argparse
+
+param = argparse.ArgumentParser()
+param.add_argument(
+    "--pathToCred",
+    type=str,
+    default="",
+    help="The path to the credential file on your computer",
+)
+param.add_argument(
+    "--queue",
+    type=str,
+    default="",
+    help="The name of the queue you want to use",
+)
+opt = param.parse_args()
 
 
 class Server:
@@ -28,8 +45,12 @@ class Server:
         if self.router.queue is None:
             raise RuntimeError("Router not bound to a queue")
 
-        # was echo.router.. TODO : how to choose the router
-        self.router.add_router(router=login.router)
+        if opt.queue == "login":
+            # was echo.router.. TODO : how to choose the router
+            self.router.add_router(router=login.router)
+        else:
+            if opt.queue == "echo":
+                self.router.add_router(router=echo.router)
 
         async def error_cb(e):
             logger.error(f"Error: {e}")
@@ -50,7 +71,7 @@ class Server:
             "reconnected_cb": reconnected_cb,
             "servers": self.settings.nats_servers,
             # TODO : find a way to include the credentials elsewhere
-            "user_credentials": "/creds/operator-nats/account_A/user_A.creds",
+            "user_credentials": opt.pathToCred,
         }
 
         await self.queue.connect(**options)

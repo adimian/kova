@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Response
+from fastapi.responses import PlainTextResponse
 import os
 import uvicorn
 import argparse
@@ -14,10 +15,9 @@ param.add_argument(
 )
 opt = param.parse_args()
 
-accounts = []
-
 
 def look_up_accounts(pathToJWT):
+    accounts = []
     temp_accounts = os.listdir(pathToJWT)
     for account in temp_accounts:
         accounts.append(os.path.splitext(account)[0])
@@ -36,11 +36,12 @@ def test():
 
 @resolver_api.get("/accounts")
 def get_accounts():
+    accounts = []
     accounts = look_up_accounts(opt.pathToJWT)
     return accounts
 
 
-@resolver_api.get("/accounts/{id}")
+@resolver_api.get("/accounts/{id}", response_class=PlainTextResponse)
 def get_account(id: str, response: Response):
     try:
         contents = open(opt.pathToJWT + "/" + id + ".jwt").read()
@@ -56,10 +57,9 @@ def get_account(id: str, response: Response):
 
 @resolver_api.post("/accounts")
 def create_account(account: str, jwt: str, response: Response):
-    accounts.append(account)
     write_jwt(opt.pathToJWT, jwt, account)
     response.status_code = 201
-    return accounts
+    return "Account created"
 
 
 if __name__ == "__main__":
