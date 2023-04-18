@@ -17,7 +17,6 @@ async def login(msg: LoginRequest, reply: Reply):
             capture_output=True,
             text=True,
         )
-        logger.debug(completed_process.stdout)
         res.account_name = completed_process.stdout
         logger.debug(res.account_name)
         await reply(res.SerializeToString())
