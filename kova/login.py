@@ -13,7 +13,7 @@ async def login(msg: LoginRequest, reply: Reply):
     if reply:
         res = LoginResponse()
         completed_process = subprocess.run(
-            ["nsc", "describe", "account", "-F", "name"],
+            ["nsc", "describe", "account", "-F", "iss"],
             capture_output=True,
             text=True,
         )

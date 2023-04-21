@@ -6,7 +6,7 @@ from loguru import logger
 router = Router()
 
 
-@router.subscribe("test.echo")
+@router.subscribe("*.echo")
 async def echo(msg: EchoRequest, reply: Reply):
     logger.debug(f"received message: {msg.message}")
     if reply:

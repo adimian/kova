@@ -1,6 +1,6 @@
 from kova.cache import Cache
 from kova.router import Router
-from kova.types import Msg
+from kova.our_types import Msg
 import pytest
 
 

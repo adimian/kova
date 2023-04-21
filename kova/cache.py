@@ -2,7 +2,7 @@ import dataclasses
 
 from arrow import Arrow, now
 
-from kova.types import Dependable
+from kova.our_types import Dependable
 
 
 @dataclasses.dataclass
