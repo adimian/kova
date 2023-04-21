@@ -2,7 +2,8 @@ import pytest
 
 from kova.protocol.login_pb2 import LoginRequest
 from kova.server import Router
-from kova.our_types import Msg, Publish, Reply
+from kova.our_types import Msg
+from kova.message import Publish, Reply
 
 
 @pytest.mark.asyncio

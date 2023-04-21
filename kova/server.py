@@ -33,14 +33,17 @@ opt = param.parse_args()
 class Server:
     def __init__(
         self,
-        settings: Settings,
+        settings: Settings | None = None,
         *,
         queue: NatsClient | None = None,
         router: Router | None = None,
     ):
-        self.settings = settings
+        self.settings = settings or get_settings()
         self.queue = queue or NatsClient()
         self.router = router or Router(queue=self.queue)
+
+    def add_router(self, router: Router):
+        self.router.add_router(router=router)
 
     async def start(self, aloop):
         if self.router.queue is None:
@@ -94,12 +97,10 @@ class Server:
 
         logger.success(f"Server started {self.queue=} {self.router=}")
 
-
-if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
-    server = Server(settings=get_settings())
-    loop.run_until_complete(server.start(loop))
-    try:
-        loop.run_forever()
-    finally:
-        loop.close()
+    def run(self):
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(self.start(loop))
+        try:
+            loop.run_forever()
+        finally:
+            loop.close()

@@ -19,7 +19,7 @@ class Cache(Dependable):
     def __init__(self):
         self._entries: dict[str, CacheEntry] = {}
 
-    def set(self, key: str, value: bytes, ttl: float | None = None):
+    async def set(self, key: str, value: bytes, ttl: float | None = None):
         if ttl is not None:
             if ttl <= 0:
                 raise ValueError("TTL must be a strictly positive float")
@@ -38,7 +38,7 @@ class Cache(Dependable):
             expire_at=expire_at,
         )
 
-    def get(self, key: str) -> bytes | None:
+    async def get(self, key: str) -> bytes | None:
         entry = self._entries.get(key)
         if entry is not None and (
             entry.expire_at is None or entry.expire_at >= now()

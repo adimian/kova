@@ -42,7 +42,7 @@ class Database(BaseSettings):
             return v  # pragma: no cover
         else:
             return PostgresDsn.build(
-                scheme="postgresql",
+                scheme="postgresql+asyncpg",
                 user=values.get("user"),
                 port=values.get("port"),
                 password=values.get("password"),

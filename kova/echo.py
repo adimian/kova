@@ -1,6 +1,7 @@
 from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
 from kova.router import Router
-from kova.our_types import Reply
+
+from kova.message import Reply
 from loguru import logger
 
 router = Router()

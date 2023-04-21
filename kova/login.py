@@ -1,6 +1,6 @@
 from kova.protocol.login_pb2 import LoginRequest, LoginResponse
 from kova.router import Router
-from kova.our_types import Reply
+from kova.message import Reply
 from loguru import logger
 import subprocess
 
