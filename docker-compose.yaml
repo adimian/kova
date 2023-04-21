@@ -22,6 +22,16 @@ services:
     networks: [ "nats" ]
     depends_on: [ "nats" ]
 
+  db:
+    image: postgres:11-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: kova-test
+      POSTGRES_USER: kova-test
+      POSTGRES_DB: kova-test
+
 networks:
   nats:
     name: nats

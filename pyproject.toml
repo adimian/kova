@@ -17,10 +17,14 @@ asyncpg = "^0.27.0"
 protobuf = "^4.21.6"
 minio = "^7.1.13"
 alembic = "^1.10.2"
-pydantic = {extras = ["email"], version = "^1.10.6"}
+pydantic = {extras = ["dotenv"], version = "^1.10.7"}
 cryptography = "^39.0.2"
 arrow = "^1.2.3"
 loguru = "^0.6.0"
+fastapi = "^0.95.1"
+httpx = "^0.24.0"
+email-validator = "^2.0.0.post2"
+python-ulid = "^1.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
