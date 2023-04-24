@@ -14,6 +14,11 @@ from kova.settings import get_settings
 email_validator.SPECIAL_USE_DOMAIN_NAMES.remove("test")
 
 
+@pytest.fixture(scope="session")
+def anyio_backend():
+    return "asyncio"
+
+
 @pytest.fixture(scope="session", autouse=True)
 def settings():
     settings = get_settings()
@@ -60,7 +65,7 @@ def engine(settings):
 
 @pytest.fixture(scope="function")
 async def session(engine, settings):
-    async_session = async_sessionmaker(engine=engine)
+    async_session = async_sessionmaker(bind=engine)
     engine.echo = settings.database.echo
 
     async with engine.begin() as conn:
@@ -71,7 +76,7 @@ async def session(engine, settings):
             await conn.run_sync(Base.metadata.create_all)
 
         async with async_session() as session:
-            return session
+            yield session
     finally:
         engine.echo = False
         async with engine.begin() as conn:
