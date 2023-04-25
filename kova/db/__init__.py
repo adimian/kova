@@ -1,8 +1,10 @@
-import contextlib
 from functools import lru_cache
-from typing import Generator
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    create_async_engine,
+    AsyncEngine,
+)
 from sqlalchemy.orm import (
     DeclarativeMeta,
     declarative_base,
@@ -24,32 +26,22 @@ class Base(_Base):
 
 
 @lru_cache()
-def get_engine(readonly: bool = False) -> Engine:
+def get_engine() -> AsyncEngine:
     settings = get_settings().database
 
-    kwargs = {}
-    if "sqlite" in settings.uri:
-        kwargs["connect_args"] = {"check_same_thread": False}  # type: ignore
-    else:
-        if readonly:
-            kwargs["execution_options"] = {
-                "isolation_level": "SERIALIZABLE",  # type: ignore
-                "postgresql_readonly": True,
-                "postgresql_deferrable": True,
-            }
-
-    engine = create_engine(
+    engine = create_async_engine(
         settings.uri,
         echo=settings.echo,
         pool_pre_ping=settings.pool_pre_ping,
         pool_size=settings.pool_size,
         max_overflow=settings.pool_max_overflow,
-        **kwargs
     )
     return engine
 
 
-def get_session(readonly: bool = False) -> Generator[Session, None, None]:
-    db = Session(bind=get_engine(readonly=readonly))
-    with contextlib.closing(db):
-        yield db
+async def get_session():
+    session = AsyncSession(get_engine(readonly=False))
+    try:
+        yield session
+    finally:
+        await session.close()

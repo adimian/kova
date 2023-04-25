@@ -1,7 +1,12 @@
+import asyncio
+
 import email_validator
 import pytest
 from cryptography.fernet import Fernet
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncSession,
+)
 from starlette.testclient import TestClient
 
 from kova.authentication import app_maker
@@ -19,8 +24,16 @@ def anyio_backend():
     return "asyncio"
 
 
+@pytest.yield_fixture(scope="session")
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
 @pytest.fixture(scope="session", autouse=True)
-def settings():
+def settings(event_loop):
     settings = get_settings()
     settings.debug = True
     settings.testing = True
@@ -49,7 +62,7 @@ def worker_id(request):
 
 
 @pytest.fixture(scope="session")
-def engine(settings):
+async def engine(settings):
     settings = get_settings().database
 
     engine = create_async_engine(
@@ -59,28 +72,23 @@ def engine(settings):
         pool_size=settings.pool_size,
         max_overflow=settings.pool_max_overflow,
     )
-
     yield engine
+    await engine.dispose()
 
 
-@pytest.fixture(scope="function")
-async def session(engine, settings):
-    async_session = async_sessionmaker(bind=engine)
-    engine.echo = settings.database.echo
-
+@pytest.fixture()
+async def create(engine):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
-    try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
 
-        async with async_session() as session:
-            yield session
-    finally:
-        engine.echo = False
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
+@pytest.fixture
+async def session(engine, create):
+    async with AsyncSession(engine) as session:
+        yield session
 
 
 @pytest.fixture
@@ -88,7 +96,7 @@ def app(
     session,
 ):
     app = app_maker()
-    app.dependency_overrides[get_session()] = lambda: session
+    app.dependency_overrides[get_session] = lambda: session
     return app
 
 

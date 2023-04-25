@@ -14,21 +14,6 @@ from kova import listen_all
 
 import argparse
 
-param = argparse.ArgumentParser()
-param.add_argument(
-    "--creds",
-    type=str,
-    default="",
-    help="The path to the credential file on your computer",
-)
-param.add_argument(
-    "--queue",
-    type=str,
-    default="echo",
-    help="The name of the queue you want to use",
-)
-opt = param.parse_args()
-
 
 class Server:
     def __init__(
@@ -48,6 +33,21 @@ class Server:
     async def start(self, aloop):
         if self.router.queue is None:
             raise RuntimeError("Router not bound to a queue")
+
+        param = argparse.ArgumentParser()
+        param.add_argument(
+            "--creds",
+            type=str,
+            default="",
+            help="The path to the credential file on your computer",
+        )
+        param.add_argument(
+            "--queue",
+            type=str,
+            default="echo",
+            help="The name of the queue you want to use",
+        )
+        opt = param.parse_args()
 
         if opt.queue == "login":
             # was echo.router.. TODO : how to choose the router
