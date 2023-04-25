@@ -1,12 +1,10 @@
-import asyncio
-
 import email_validator
 import pytest
 from cryptography.fernet import Fernet
-from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    AsyncSession,
-)
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.ddl import DropSchema, CreateSchema
 from starlette.testclient import TestClient
 
 from kova.authentication import app_maker
@@ -19,21 +17,8 @@ from kova.settings import get_settings
 email_validator.SPECIAL_USE_DOMAIN_NAMES.remove("test")
 
 
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
-
-
-@pytest.yield_fixture(scope="session")
-def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
 @pytest.fixture(scope="session", autouse=True)
-def settings(event_loop):
+def settings():
     settings = get_settings()
     settings.debug = True
     settings.testing = True
@@ -62,33 +47,54 @@ def worker_id(request):
 
 
 @pytest.fixture(scope="session")
-async def engine(settings):
+def engine(settings):
     settings = get_settings().database
 
-    engine = create_async_engine(
+    engine = create_engine(
         settings.uri,
         echo=settings.echo,
         pool_pre_ping=settings.pool_pre_ping,
         pool_size=settings.pool_size,
         max_overflow=settings.pool_max_overflow,
     )
+
     yield engine
-    await engine.dispose()
+    engine.dispose()
 
 
-@pytest.fixture()
-async def create(engine):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+@pytest.fixture(scope="function")
+def session(engine, settings, worker_id):
+    schema = f"_s_{worker_id}"
 
+    try:
+        with engine.begin() as connection:
+            connection.execute(DropSchema(schema, cascade=True))
+    except ProgrammingError:
+        pass  # schema properly deleted
+    finally:
+        with engine.begin() as connection:
+            connection.execute(CreateSchema(schema))
 
-@pytest.fixture
-async def session(engine, create):
-    async with AsyncSession(engine) as session:
-        yield session
+    tmp_engine = engine.execution_options(schema_translate_map={None: schema})
+
+    session_local = sessionmaker(
+        autocommit=False, autoflush=False, bind=tmp_engine
+    )
+    db = session_local()
+    engine.echo = settings.database.echo
+
+    Base.metadata.drop_all(bind=tmp_engine)
+
+    try:
+        Base.metadata.create_all(bind=tmp_engine)
+        db.execute(text(f"SET search_path TO {schema}"))
+        yield db
+    finally:
+        db.rollback()
+        tmp_engine.echo = False
+        Base.metadata.drop_all(bind=tmp_engine)
+        with engine.begin() as connection:
+            connection.execute(DropSchema(schema))
 
 
 @pytest.fixture

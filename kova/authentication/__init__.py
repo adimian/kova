@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from kova.db import get_session
 from kova.db.models import User
@@ -16,12 +16,15 @@ class RegisterPostModel(BaseModel):
 @router.post("/register")
 async def register_user(
     payload: RegisterPostModel,
-    session: AsyncSession = Depends(get_session),
+    session: Session = Depends(get_session),
 ):
-    query = await session.execute(
-        select(User).where(User.email == payload.email)
-    )
-    user = query.one()
+    query = session.execute(select(User).where(User.email == payload.email))
+    user = query.one_or_none()
+
+    if user is None:
+        user = User(email=payload.email.lower())
+        session.add(user)
+        session.commit()
 
     return user
 
