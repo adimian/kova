@@ -24,7 +24,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     Client ->> Web_Server: Login(email)
-    Web_Server ->> Applicative_Server: Config_user_access (using nsc)
+    Web_Server ->> Applicative_Server: Create_credentials(ULID)
+    Applicative_Server ->> Applicative_Server: Config_user_access (using nsc)
     Applicative_Server ->> Client: Credentials(jwt, seed)
 ```
 ## Error handling
