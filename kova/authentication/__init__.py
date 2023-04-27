@@ -18,13 +18,9 @@ async def register_user(
     payload: RegisterPostModel,
     session: Session = Depends(get_session),
 ):
-    if payload.email is None:
-        raise ValueError("Email cannot be None")
-    else:
-        query = session.execute(
-            select(User).where(User.email == payload.email)
-        )
-        user = query.one_or_none()
+
+    query = session.execute(select(User).where(User.email == payload.email))
+    user = query.one_or_none()
 
     if user is None:
         user = User(email=payload.email.lower())

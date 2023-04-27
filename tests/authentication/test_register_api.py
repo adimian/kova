@@ -15,15 +15,19 @@ def test_user_can_register_with_their_email(client, session):
 
 
 def test_email_not_none(client, session):
-    client.post("/register", json={"email": None})
+    res = client.post("/register", json={"email": None})
+    assert res.status_code == 422, res.text
+
     query = session.execute(select(User).where(User.email is None))
     user = query.one_or_none()
     assert user is None
 
 
 def test_email_is_valid_email(client, session):
-    client.post("/register", json={"email": "1234"})
-    query = session.execute(select(User).where(User.email == "1234"))
+    res = client.post("/register", json={"email": ""})
+    assert res.status_code == 422, res.text
+
+    query = session.execute(select(User).where(User.email == ""))
     user = query.one_or_none()
     assert user is None
 
