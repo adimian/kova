@@ -104,6 +104,8 @@ class Settings(BaseSettings):
 
     nats_servers: str | list[str] = ["nats://51.15.136.91:4222"]
 
+    nats_creds_directory: str | None = None
+
     sentry_dsn: HttpUrl | None = None
 
 
