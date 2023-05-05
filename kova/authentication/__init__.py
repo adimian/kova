@@ -39,13 +39,13 @@ async def register_user(
     return user
 
 
-@router.post("/login")
+@router.get("/login/{email}")
 async def login_user(
-    payload: LoginPostModel,
+    email: EmailStr,
     session: Session = Depends(get_session),
 ):
 
-    query = session.execute(select(User.id).where(User.email == payload.email))
+    query = session.execute(select(User.id).where(User.email == email))
     user = query.one_or_none()
 
     if user is None:
@@ -57,9 +57,8 @@ async def login_user(
         if look_for_id is not None:
             id = look_for_id.group()
         credentials = create_creds(id)
-        print(credentials)
 
-    return user.__str__()
+    return credentials
 
 
 def app_maker():
