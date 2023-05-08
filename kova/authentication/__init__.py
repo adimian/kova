@@ -39,13 +39,13 @@ async def register_user(
     return user
 
 
-@router.get("/login/{email}")
+@router.post("/login")
 async def login_user(
-    email: EmailStr,
+    payload: LoginPostModel,
     session: Session = Depends(get_session),
 ):
 
-    query = session.execute(select(User.id).where(User.email == email))
+    query = session.execute(select(User.id).where(User.email == payload.email))
     user = query.one_or_none()
 
     if user is None:
