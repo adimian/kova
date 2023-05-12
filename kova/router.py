@@ -6,6 +6,7 @@ from nats.aio.client import Client as NATSClient
 from nats.aio.msg import Msg as NATSMsg
 
 from .our_types import Message, Dependable
+from .current_user import CurrentUser
 
 
 class InMemoryQueue:
@@ -48,6 +49,7 @@ class Router:
         if self.queue is None:
             raise RuntimeError("Router not bound to a queue")
 
+        current_user = CurrentUser()
         message_parsed_as = None
         dependencies = tuple(Dependable.get_instances())
 
@@ -71,6 +73,10 @@ class Router:
                         message_parsed_as = atype
                     message = atype.FromString(msg.data)
                     kwargs[attr] = message
+                elif issubclass(atype, CurrentUser):
+                    name = msg.subject.split(".")
+                    current_user._name = name[0]
+                    kwargs[attr] = current_user
                 elif issubclass(atype, dependencies):
                     kwargs[attr] = atype.get_instance(  # type: ignore
                         router=self,

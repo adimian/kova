@@ -1,11 +1,12 @@
 import subprocess
+import os
 
 from kova.settings import get_settings
 
 
 def create_creds(ULID):
     if ULID is not None:
-        pub = f"{ULID}.*"
+        pub = f"{ULID}.>"
         sub = "_INBOX.>"
 
         subprocess.run(
@@ -19,6 +20,8 @@ def create_creds(ULID):
                 pub,
                 "--allow-sub",
                 sub,
+                "--expiry",
+                "6M",
             ],
             capture_output=True,
             text=True,
@@ -30,6 +33,7 @@ def create_creds(ULID):
 
         file = open(path, mode="r")
         f = file.read()
+        os.remove(path)
     else:
-        f = None
+        raise ValueError("ULID can't be None")
     return f

@@ -50,7 +50,6 @@ class Server:
         opt = param.parse_args()
 
         if opt.queue == "login":
-            # was echo.router.. TODO : how to choose the router
             self.router.add_router(router=login.router)
         if opt.queue == "echo":
             self.router.add_router(router=echo.router)
@@ -75,7 +74,6 @@ class Server:
             "closed_cb": closed_cb,
             "reconnected_cb": reconnected_cb,
             "servers": self.settings.nats_servers,
-            # TODO : find a way to include the credentials elsewhere
             "user_credentials": opt.creds,
         }
 

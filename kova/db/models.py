@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 
 from . import Base
-from ..types import ULIDType, ULID
+from ..ulid_types import ULIDType, ULID
 
 
 class User(Base):
