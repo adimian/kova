@@ -1,8 +1,8 @@
 """
     This server serves back messages sent to `*.echo.identified`
-    The reply will be the same for 5 seconds, after which it will be updated
+    The reply will contain the name of the current user
 
-    $ python scripts/nats-pub.py --request test.echo.cached
+    $ python scripts/nats-pub.py --request user_ulid.echo.identified
 
 """
 

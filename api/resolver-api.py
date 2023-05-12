@@ -25,8 +25,8 @@ def look_up_accounts(pathToJWT):
 
 
 def write_jwt(pathToJWT: str, jwt: str, account: str):
-    file = open(pathToJWT + "/" + account + ".jwt", "w")
-    file.write(jwt)
+    with open(pathToJWT + "/" + account + ".jwt") as my_jwt:
+        my_jwt.write(jwt)
 
 
 @resolver_api.get("/")

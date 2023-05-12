@@ -31,8 +31,8 @@ def create_creds(ULID):
 
         path = settings.nats_creds_directory + "/" + filename
 
-        file = open(path, mode="r")
-        f = file.read()
+        with open(path) as my_jwt:
+            f = my_jwt.read()
         os.remove(path)
     else:
         raise ValueError("ULID can't be None")
