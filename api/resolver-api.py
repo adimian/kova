@@ -6,26 +6,20 @@ import argparse
 
 resolver_api = FastAPI()
 
-param = argparse.ArgumentParser()
-param.add_argument(
-    "--pathToJWT",
-    type=str,
-    default="",
-    help="The path to the JWT files on your computer",
-)
-opt = param.parse_args()
 
-
-def look_up_accounts(pathToJWT):
+def look_up_accounts(path_jwt):
     accounts = []
-    temp_accounts = os.listdir(pathToJWT)
+    temp_accounts = os.listdir(path_jwt)
     for account in temp_accounts:
-        accounts.append(os.path.splitext(account)[0])
+        filename, ext = os.path.splitext(account)
+        accounts.append(filename)
     return accounts
 
 
-def write_jwt(pathToJWT: str, jwt: str, account: str):
-    with open(pathToJWT + "/" + account + ".jwt") as my_jwt:
+def write_jwt(path_jwt: str, jwt: str, account: str):
+    filename = f"{account}.jwt"
+    path = os.path.join(path_jwt, filename)
+    with open(path) as my_jwt:
         my_jwt.write(jwt)
 
 
@@ -36,15 +30,15 @@ def test():
 
 @resolver_api.get("/accounts")
 def get_accounts():
-    accounts = []
-    accounts = look_up_accounts(opt.pathToJWT)
-    return accounts
+    return look_up_accounts(opt.pathToJWT)
 
 
 @resolver_api.get("/accounts/{id}", response_class=PlainTextResponse)
 def get_account(id: str, response: Response):
     try:
-        contents = open(opt.pathToJWT + "/" + id + ".jwt").read()
+        filename = f"{id}.jwt"
+        path = os.path.join(opt.pathToJWT, filename)
+        contents = open(path).read()
         print(contents)
         contents = contents.strip()
         return contents
@@ -63,4 +57,13 @@ def create_account(account: str, jwt: str, response: Response):
 
 
 if __name__ == "__main__":
+    param = argparse.ArgumentParser()
+    param.add_argument(
+        "--pathToJWT",
+        type=str,
+        default="",
+        help="The path to the JWT files on your computer",
+    )
+    opt = param.parse_args()
+
     uvicorn.run(resolver_api, port=8000, host="0.0.0.0")
