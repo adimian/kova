@@ -7,8 +7,8 @@ class CurrentUser(Dependable):
         return cls()
 
     def __init__(self):
-        self._name: str = ""
-        self._id: str = ""
+        self.name: str = ""
+        self.id: str = ""
 
 
 Dependable.register(CurrentUser)

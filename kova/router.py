@@ -75,7 +75,7 @@ class Router:
                     kwargs[attr] = message
                 elif issubclass(atype, CurrentUser):
                     name = msg.subject.split(".")
-                    current_user._name = name[0]
+                    current_user.name = name[0]
                     kwargs[attr] = current_user
                 elif issubclass(atype, dependencies):
                     kwargs[attr] = atype.get_instance(  # type: ignore

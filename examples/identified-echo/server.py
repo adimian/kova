@@ -24,7 +24,7 @@ async def identified_request(
     logger.debug(f"received message: {msg.message}")
     if reply:
         res = EchoResponse()
-        res.message = f"echo {msg.message} from {current_user._name}"
+        res.message = f"echo {msg.message} from {current_user.name}"
         await reply(res.SerializeToString())
         logger.debug("response sent")
     else:
