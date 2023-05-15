@@ -2,7 +2,6 @@ from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-import re
 
 from kova.db import get_session
 from kova.db.models import User
@@ -51,13 +50,9 @@ async def login_user(
     if user is None:
         raise HTTPException(status_code=404, detail="Email not registered")
     else:
-        look_for_id = re.search(
-            "(?<=(ULID\\())[a-zA-Z0-9]*(?=[\\)])", user.__str__()
-        )
-        if look_for_id is not None:
-            id = look_for_id.group()
+        user = user._asdict()
+        id = str(user["id"])
         credentials = create_creds(id)
-
     return credentials
 
 
