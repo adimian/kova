@@ -39,7 +39,6 @@ def get_account(id: str, response: Response):
         filename = f"{id}.jwt"
         path = os.path.join(opt.pathToJWT, filename)
         contents = open(path).read()
-        print(contents)
         contents = contents.strip()
         return contents
 

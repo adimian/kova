@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -34,7 +34,7 @@ async def register_user(
         session.add(user)
         session.commit()
     else:
-        raise ValueError("Email already registerd")
+        raise HTTPException(status_code=403, detail="Email already registered")
 
     return user
 
@@ -49,7 +49,7 @@ async def login_user(
     user = query.one_or_none()
 
     if user is None:
-        raise ValueError("Email not registerd")
+        raise HTTPException(status_code=404, detail="Email not registered")
     else:
         look_for_id = re.search(
             "(?<=(ULID\\())[a-zA-Z0-9]*(?=[\\)])", user.__str__()

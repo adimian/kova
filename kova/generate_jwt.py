@@ -28,8 +28,7 @@ def create_creds(ULID):
         )
         settings = get_settings()
         filename = f"{ULID}.creds"
-
-        path = settings.nats_creds_directory + "/" + filename
+        path = os.path.join(settings.nats_creds_directory, filename)
 
         with open(path) as my_jwt:
             f = my_jwt.read()
