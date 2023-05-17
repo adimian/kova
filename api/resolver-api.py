@@ -3,6 +3,7 @@ from fastapi.responses import PlainTextResponse
 import os
 import uvicorn
 import argparse
+from loguru import logger
 
 resolver_api = FastAPI()
 
@@ -43,7 +44,7 @@ def get_account(id: str, response: Response):
         return contents
 
     except Exception as e:
-        print(e)
+        logger.error(f"Error: {e}")
         response.status_code = 404
         return "Account Not found"
 

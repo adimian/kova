@@ -33,7 +33,7 @@ async def register_user(
         session.add(user)
         session.commit()
     else:
-        raise HTTPException(status_code=403, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Email already registered")
 
     return user
 
