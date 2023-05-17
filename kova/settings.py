@@ -1,4 +1,6 @@
+import tempfile
 from functools import lru_cache
+from pathlib import Path
 from pprint import pprint
 from typing import Any
 
@@ -88,6 +90,12 @@ class Redis(BaseSettings):
     ssl_ca_certs: str | None = None
 
 
+def _get_default_nsc_creds_directory():
+    tmp = Path(tempfile.gettempdir()) / "nsc-creds"
+    tmp.mkdir(exist_ok=True)
+    return tmp.as_posix()
+
+
 class Settings(BaseSettings):
     class Config:
         env_file = ENV_FILE
@@ -104,7 +112,9 @@ class Settings(BaseSettings):
 
     nats_servers: str | list[str] = ["nats://localhost:4222"]
 
-    nats_creds_directory: str | None = None
+    nats_creds_directory: str = Field(
+        default_factory=_get_default_nsc_creds_directory
+    )
 
     sentry_dsn: HttpUrl | None = None
 
