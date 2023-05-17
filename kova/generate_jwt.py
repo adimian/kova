@@ -4,10 +4,11 @@ import os
 from kova.settings import get_settings
 
 
-def create_creds(ULID):
-    if ULID is not None:
-        pub = f"{ULID}.>"
+def create_creds(ulid):
+    if ulid is not None:
+        pub = f"{ulid}.>"
         sub = "_INBOX.>"
+        settings = get_settings()
 
         subprocess.run(
             [
@@ -15,19 +16,24 @@ def create_creds(ULID):
                 "add",
                 "user",
                 "--name",
-                ULID,
+                ulid,
                 "--allow-pub",
                 pub,
                 "--allow-sub",
                 sub,
                 "--expiry",
                 "6M",
+                "--data-dir",
+                settings.nats_creds_directory,
+                "--keystore-dir",
+                settings.nats_creds_directory,
             ],
             capture_output=True,
             text=True,
+            cwd=settings.nats_creds_directory,
         )
-        settings = get_settings()
-        filename = f"{ULID}.creds"
+
+        filename = f"{ulid}.creds"
         path = os.path.join(settings.nats_creds_directory, filename)
 
         with open(path) as my_jwt:

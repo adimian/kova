@@ -6,6 +6,17 @@
 
 ## Installation
 
+### Install `nsc`
+
+```
+brew tap nats-io/nats-tools
+brew install nats-io/nats-tools/nsc
+
+# to uninstall:
+brew uninstall nats-io/nats-tools/nsc
+brew untap nats-io/nats-tools
+```
+
 ## Usage
 
 ## Support

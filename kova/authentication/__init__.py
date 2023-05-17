@@ -24,7 +24,6 @@ async def register_user(
     payload: RegisterPostModel,
     session: Session = Depends(get_session),
 ):
-
     query = session.execute(select(User).where(User.email == payload.email))
     user = query.one_or_none()
 
@@ -43,16 +42,14 @@ async def login_user(
     payload: LoginPostModel,
     session: Session = Depends(get_session),
 ):
-
     query = session.execute(select(User.id).where(User.email == payload.email))
     user = query.one_or_none()
 
     if user is None:
         raise HTTPException(status_code=404, detail="Email not registered")
     else:
-        user = user._asdict()
-        id = str(user["id"])
-        credentials = create_creds(id)
+        user_id = str(user.id)
+        credentials = create_creds(user_id)
     return credentials
 
 
