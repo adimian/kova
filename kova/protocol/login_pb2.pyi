@@ -17,17 +17,13 @@ class AccessTokenResponse(_message.Message):
     def __init__(self, access_token: _Optional[str] = ...) -> None: ...
 
 class LoginRequest(_message.Message):
-    __slots__ = ["email", "mfa_code"]
+    __slots__ = ["email"]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
-    MFA_CODE_FIELD_NUMBER: _ClassVar[int]
     email: str
-    mfa_code: str
-    def __init__(
-        self, email: _Optional[str] = ..., mfa_code: _Optional[str] = ...
-    ) -> None: ...
+    def __init__(self, email: _Optional[str] = ...) -> None: ...
 
 class LoginResponse(_message.Message):
-    __slots__ = ["refresh_token"]
-    REFRESH_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    refresh_token: str
-    def __init__(self, refresh_token: _Optional[str] = ...) -> None: ...
+    __slots__ = ["account_name"]
+    ACCOUNT_NAME: _ClassVar[int]
+    account_name: str
+    def __init__(self, account_name: _Optional[str] = ...) -> None: ...

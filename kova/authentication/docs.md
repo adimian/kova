@@ -1,41 +1,71 @@
-# Obtaining a `refresh_token`
+# First register
 
 ## Happy path
 ```mermaid
 sequenceDiagram
-    Client ->> Server: LoginRequest(email)
-    Server ->> Mail Service: send_session_code(email, session_code)
-    Client ->> Server: LoginSessionRequest(session_code)
-    alt has_mfa_enabled
-    Server ->> Client: LoginResponse(mfa_required)
-    Client ->> Server: LoginSessionRequest(session_code, mfa_code)
-    end
-    Server ->> Client: LoginResponse(refresh_token)
+    Client ->> Web_Server: LoginRequest(email)
+    Web_Server ->> Database: Insert(User_ULID, email)
 ```
 
 ## Error handling
-TODO
 
-# Obtaining an `access_token`
+### Email already registered
+```mermaid
+sequenceDiagram
+    Client ->> Web_Server: LoginRequest(email)
+    Web_Server ->> Database: Insert(User_ULID, email)
+    Database ->> Web_Server: Error("Email already registered")
+    Web_Server ->> Client : Error("Email already registered")
+```
+
+# Obtaining a `JWT`
 
 ## Happy path
 ```mermaid
 sequenceDiagram
-    Client ->> Server: AccessTokenRequest(refresh_token)
-    Server ->> Server: Verify refresh_token validity
-    Server ->> Client: AccessToken(access_token)
+    Client ->> Web_Server: Login(email)
+    Web_Server ->> Applicative_Server: Create_credentials(ULID)
+    Applicative_Server ->> Applicative_Server: Config_user_access (using nsc)
+    Applicative_Server ->> Client: Credentials(jwt, seed)
 ```
 ## Error handling
-TODO
+
+### Invalid email
+```mermaid
+sequenceDiagram
+    Client ->> Web_Server: Login(email)
+    Web_Server ->> Client: Error("Invalid email, not saved in DB")
+
+```
 
 # Making authenticated calls
 
 ## Happy path
 ```mermaid
 sequenceDiagram
-    Client ->> Server: PerformAction({headers: access_token}, [params,...])
-    Server ->> Client: Response([data, ...])
+    Client ->> NATS_Server: PerformAction({headers: credentials}, [params,...])
+    NATS_Server ->> Client: Response([data, ...])
 ```
 
 ## Error handling
-TODO
+
+### Invalid Credentials
+```mermaid
+sequenceDiagram
+    Client ->> NATS_Server: PerformAction({headers: credentials}, [params,...])
+    NATS_Server ->> Client: Error("Invalid credentials")
+```
+
+### Missing Credentials
+```mermaid
+sequenceDiagram
+    Client ->> NATS_Server: PerformAction({headers: credentials}, [params,...])
+    NATS_Server ->> Client: Error("Missing credentials")
+```
+
+### No longer valid Credentials
+```mermaid
+sequenceDiagram
+    Client ->> NATS_Server: PerformAction({headers: credentials}, [params,...])
+    NATS_Server ->> Client: Error("Credentials have expired, Login again")
+```

@@ -2,7 +2,7 @@ import pytest
 
 from kova.protocol.login_pb2 import LoginRequest
 from kova.server import Router
-from kova.types import Msg
+from kova.our_types import Msg
 from kova.message import Publish, Reply
 
 

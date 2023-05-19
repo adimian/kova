@@ -9,6 +9,10 @@ from kova.router import Router
 from kova.settings import Settings, get_settings
 
 from kova import echo
+from kova import login
+from kova import listen_all
+
+import argparse
 
 
 class Server:
@@ -30,7 +34,27 @@ class Server:
         if self.router.queue is None:
             raise RuntimeError("Router not bound to a queue")
 
-        self.router.add_router(router=echo.router)
+        param = argparse.ArgumentParser()
+        param.add_argument(
+            "--creds",
+            type=str,
+            default="",
+            help="The path to the credential file on your computer",
+        )
+        param.add_argument(
+            "--queue",
+            type=str,
+            default="echo",
+            help="The name of the queue you want to use",
+        )
+        opt = param.parse_args()
+
+        if opt.queue == "login":
+            self.router.add_router(router=login.router)
+        if opt.queue == "echo":
+            self.router.add_router(router=echo.router)
+        if opt.queue == "all":
+            self.router.add_router(router=listen_all.router)
 
         async def error_cb(e):
             logger.error(f"Error: {e}")
@@ -50,6 +74,7 @@ class Server:
             "closed_cb": closed_cb,
             "reconnected_cb": reconnected_cb,
             "servers": self.settings.nats_servers,
+            "user_credentials": opt.creds,
         }
 
         await self.queue.connect(**options)

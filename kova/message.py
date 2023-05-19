@@ -1,4 +1,4 @@
-from kova.types import Dependable
+from kova.our_types import Dependable
 
 
 class Publish(Dependable):
