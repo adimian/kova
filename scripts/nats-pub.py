@@ -81,10 +81,10 @@ async def run():
     payload = req.SerializeToString()
 
     if args.request:
-        response = await nc.request(args.subject, payload, timeout=5)
+        response = await nc.request(args.subject, payload, timeout=10)
         print(f"Requested [{args.subject}] : '{data}'")
         res = EchoResponse.FromString(response.data)
-        print(f"Got response: {res}")
+        print(f"Got response: {res.message}")
     else:
         await nc.publish(args.subject, payload)
         print(f"Published [{args.subject}] : '{data}'")
