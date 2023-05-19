@@ -9,8 +9,6 @@ from kova.router import Router
 from kova.settings import Settings, get_settings
 
 from kova import echo
-from kova import login
-from kova import listen_all
 
 import argparse
 
@@ -49,12 +47,8 @@ class Server:
         )
         opt = param.parse_args()
 
-        if opt.queue == "login":
-            self.router.add_router(router=login.router)
         if opt.queue == "echo":
             self.router.add_router(router=echo.router)
-        if opt.queue == "all":
-            self.router.add_router(router=listen_all.router)
 
         async def error_cb(e):
             logger.error(f"Error: {e}")

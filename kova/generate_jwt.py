@@ -31,7 +31,7 @@ def create_creds(ulid):
         )
 
         # TODO : how to get operator and account jwt in temp file
-        # breakpoint()
+
         logger.error(f"Error: {result_set_up.stderr}")
 
         result_creation = subprocess.run(
