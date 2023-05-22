@@ -48,20 +48,23 @@ def associate_operator():
             status_code=409,
             detail=f"Couldn't add operator : {result_association.stderr}",
         )
-    # logger.info(f"Info: {result_association.stdout}")
+    logger.info(f"Info: {result_association.stdout}")
 
     return operator_name
 
 
 def create_key_dir():
-    command = f'export NKEYS_PATH="{settings.nats_creds_directory}"'
+    """command = f'export NKEYS_PATH="{settings.nats_creds_directory}"'
 
     subprocess.run(
         command,
         capture_output=True,
         text=True,
         shell=True,
-    )
+    )"""
+    os.environ["NKEYS_PATH"] = settings.nats_creds_directory
+
+    logger.info(f"Test: {os.environ['NKEYS_PATH']}")
 
     result_key_dir = subprocess.run(
         ["nsc", "keys", "migrate"],
@@ -76,7 +79,7 @@ def create_key_dir():
             status_code=409,
             detail=f"Couldn't change keys directory : {result_key_dir.stderr}",
         )
-    # logger.info(f"Info: {result_test.stdout}")
+    logger.info(f"Info: {result_key_dir.stdout}")
 
     return settings.nats_creds_directory
 
@@ -108,7 +111,7 @@ def create_creds(ulid):
 
         with open(path) as my_jwt:
             f = my_jwt.read()
-        # os.remove(path)
+        os.remove(path)
     else:
         raise ValueError("ULID can't be None")
     return f
@@ -123,10 +126,19 @@ async def info():
 
 
 @nsc_app.get("/operator")
-def new_user():
-    ulid = 2
-    associate_operator()
-    create_key_dir()
+def operator():
+    operator = associate_operator()
+    return operator
+
+
+@nsc_app.get("/dir-keys")
+def dir_key():
+    directory = create_key_dir()
+    return directory
+
+
+@nsc_app.post("/creds")
+def creation_credential(ulid):
     credentials = create_creds(ulid)
     return credentials
 
