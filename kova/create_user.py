@@ -91,8 +91,8 @@ def create_creds(ulid):
 
         command_creation = (
             f"nsc add user --name {ulid} "
-            f"--allow-pub {pub}"
-            f" --allow-sub {sub} "
+            f"--allow-pub {pub} "
+            f"--allow-sub {sub} "
             f"--expiry 6M "
         )
 
