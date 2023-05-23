@@ -47,6 +47,14 @@ class NscWrapper:
             logger.error(output.stdout)
             raise NscException(output.stderr)
 
+    def _get_argument(self, **kwargs):
+        arguments = []
+        for arg in kwargs:
+            var = arg.replace("_", "-")
+            arguments.append(f"--{var}")
+            arguments.append(f'"{kwargs[arg]}"')
+        return arguments
+
     def create_operator(self, name: str):
         self._execute("add", "operator", name)
         logger.success(f"operator {name} created")
@@ -56,16 +64,16 @@ class NscWrapper:
         logger.success(f"account {name} created")
 
     def create_user(self, name: str, **kwargs):
-        if kwargs:
-            arguments = []
-            for arg in kwargs:
-                var = arg.replace("_", "-")
-                arguments.append(f"--{var}")
-                arguments.append(f'"{kwargs[arg]}"')
-            self._execute("add", "user", name, " ".join(arguments))
-        else:
-            self._execute("add", "user", name)
-        logger.success(f"account {name} created")
+        arguments = self._get_argument(**kwargs)
+        self._execute("add", "user", name, " ".join(arguments))
+
+        logger.success(f"user {name} created")
+
+    def edit_user(self, name: str, **kwargs):
+        arguments = self._get_argument(**kwargs)
+        self._execute("edit", "user", name, " ".join(arguments))
+
+        logger.success(f"user {name} edited")
 
     def get_version(self) -> str:
         output = self._execute("--version")

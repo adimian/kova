@@ -68,7 +68,6 @@ def test_nsc_can_create_a_user_with_permission(nsc: NscWrapper):
         name="bo", allow_pub="bo.>", allow_sub="_INBOX.>", expiry="6M"
     )
     jwt = nsc.get_user_jwt(name="bo")
-    logger.debug(jwt)
     assert jwt.count(".") == 2
 
 
@@ -79,7 +78,6 @@ def test_nsc_can_create_a_user_with_some_permission(nsc: NscWrapper):
 
     nsc.create_user(name="bo", allow_pub="bo.>", allow_sub="_INBOX.>")
     jwt = nsc.get_user_jwt(name="bo")
-    logger.debug(jwt)
     assert jwt.count(".") == 2
 
 
@@ -90,3 +88,24 @@ def test_nsc_can_create_a_user_with_wrong_permission(nsc: NscWrapper):
 
     with pytest.raises(NscException):
         nsc.create_user(name="bo", not_allow_pub="bo.>", allow_sub="_INBOX.>")
+
+
+def test_nsc_can_edit_a_user(nsc: NscWrapper):
+    nsc.create_operator(name="bobby")
+    nsc.create_account(name="bob")
+    nsc.create_user(name="bo")
+
+    nsc.edit_user(name="bo", allow_pubsub="all", deny_pub="test.>")
+
+    jwt = nsc.get_user_jwt(name="bo")
+    logger.debug(jwt)
+    assert jwt.count(".") == 2
+
+
+def test_nsc_can_not_edit_a_user_when_no_options(nsc: NscWrapper):
+    nsc.create_operator(name="bobby")
+    nsc.create_account(name="bob")
+    nsc.create_user(name="bo")
+
+    with pytest.raises(NscException):
+        nsc.edit_user(name="bo")
