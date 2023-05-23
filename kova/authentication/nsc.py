@@ -1,4 +1,3 @@
-import os
 import subprocess
 from pathlib import Path
 
@@ -84,28 +83,20 @@ class NscWrapper:
         with operator_jwt.open(mode="r") as f:
             return f.read()
 
-    def get_account_jwt(self, name: str) -> str:
-        operator_name = os.listdir(self.data_dir)
+    def get_account_jwt(self, name: str, operator: str) -> str:
         account_jwt = (
-            Path(self.data_dir)
-            / operator_name[0]
-            / "accounts"
-            / name
-            / f"{name}.jwt"
+            Path(self.data_dir) / operator / "accounts" / name / f"{name}.jwt"
         )
         with account_jwt.open(mode="r") as f:
             return f.read()
 
-    def get_user_jwt(self, name: str) -> str:
-        operator_name = os.listdir(self.data_dir)
-        account_name = os.listdir(
-            Path(self.data_dir) / operator_name[0] / "accounts"
-        )
+    def get_user_jwt(self, name: str, account: str, operator: str) -> str:
+
         user_jwt = (
             Path(self.data_dir)
-            / operator_name[0]
+            / operator
             / "accounts"
-            / account_name[0]
+            / account
             / "users"
             / f"{name}.jwt"
         )

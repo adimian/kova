@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from kova.db import get_session
 from kova.db.models import User
-from kova.generate_jwt import create_creds
 
 
 router = APIRouter()
@@ -48,8 +47,7 @@ async def login_user(
     if user is None:
         raise HTTPException(status_code=404, detail="Email not registered")
     else:
-        user_id = str(user.id)
-        credentials = create_creds(user_id)
+        credentials = None  # TODO : using str(user.id)
     return credentials
 
 

@@ -45,7 +45,7 @@ def test_nsc_can_create_an_account(nsc: NscWrapper):
     nsc.create_operator(name="bobby")
 
     nsc.create_account(name="bob")
-    jwt = nsc.get_account_jwt(name="bob")
+    jwt = nsc.get_account_jwt(name="bob", operator="bobby")
     assert jwt.count(".") == 2
 
 
@@ -55,7 +55,7 @@ def test_nsc_can_create_a_user(nsc: NscWrapper):
     nsc.create_account(name="bob")
 
     nsc.create_user(name="bo")
-    jwt = nsc.get_user_jwt(name="bo")
+    jwt = nsc.get_user_jwt(name="bo", account="bob", operator="bobby")
     assert jwt.count(".") == 2
 
 
@@ -65,9 +65,13 @@ def test_nsc_can_create_a_user_with_permission(nsc: NscWrapper):
     nsc.create_account(name="bob")
 
     nsc.create_user(
-        name="bo", allow_pub="bo.>", allow_sub="_INBOX.>", expiry="6M"
+        name="bo",
+        allow_pub="bo.>",
+        allow_sub="_INBOX.>",
+        expiry="6M",
+        account="bob",
     )
-    jwt = nsc.get_user_jwt(name="bo")
+    jwt = nsc.get_user_jwt(name="bo", account="bob", operator="bobby")
     assert jwt.count(".") == 2
 
 
@@ -77,17 +81,26 @@ def test_nsc_can_create_a_user_with_some_permission(nsc: NscWrapper):
     nsc.create_account(name="bob")
 
     nsc.create_user(name="bo", allow_pub="bo.>", allow_sub="_INBOX.>")
-    jwt = nsc.get_user_jwt(name="bo")
+    jwt = nsc.get_user_jwt(name="bo", account="bob", operator="bobby")
     assert jwt.count(".") == 2
 
 
-def test_nsc_can_create_a_user_with_wrong_permission(nsc: NscWrapper):
+def test_nsc_can_not_create_a_user_with_wrong_permission(nsc: NscWrapper):
     nsc.create_operator(name="bobby")
 
     nsc.create_account(name="bob")
 
     with pytest.raises(NscException):
         nsc.create_user(name="bo", not_allow_pub="bo.>", allow_sub="_INBOX.>")
+
+
+def test_nsc_can_not_create_a_user_with_wrong_account(nsc: NscWrapper):
+    nsc.create_operator(name="bobby")
+
+    nsc.create_account(name="bob")
+
+    with pytest.raises(NscException):
+        nsc.create_user(name="bo", account="alice")
 
 
 def test_nsc_can_edit_a_user(nsc: NscWrapper):
@@ -97,7 +110,7 @@ def test_nsc_can_edit_a_user(nsc: NscWrapper):
 
     nsc.edit_user(name="bo", allow_pubsub="all", deny_pub="test.>")
 
-    jwt = nsc.get_user_jwt(name="bo")
+    jwt = nsc.get_user_jwt(name="bo", account="bob", operator="bobby")
     logger.debug(jwt)
     assert jwt.count(".") == 2
 
