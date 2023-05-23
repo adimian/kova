@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -50,11 +51,55 @@ class NscWrapper:
         self._execute("add", "operator", name)
         logger.success(f"operator {name} created")
 
+    def create_account(self, name: str):
+        self._execute("add", "account", name)
+        logger.success(f"account {name} created")
+
+    def create_user(self, name: str, **kwargs):
+        if kwargs:
+            arguments = []
+            for arg in kwargs:
+                var = arg.replace("_", "-")
+                arguments.append(f"--{var}")
+                arguments.append(f'"{kwargs[arg]}"')
+            self._execute("add", "user", name, " ".join(arguments))
+        else:
+            self._execute("add", "user", name)
+        logger.success(f"account {name} created")
+
     def get_version(self) -> str:
-        output = self._execute()
-        return output.stderr.strip()
+        output = self._execute("--version")
+        return output.stdout.strip()
 
     def get_operator_jwt(self, name: str) -> str:
         operator_jwt = Path(self.data_dir) / name / f"{name}.jwt"
         with operator_jwt.open(mode="r") as f:
+            return f.read()
+
+    def get_account_jwt(self, name: str) -> str:
+        operator_name = os.listdir(self.data_dir)
+        account_jwt = (
+            Path(self.data_dir)
+            / operator_name[0]
+            / "accounts"
+            / name
+            / f"{name}.jwt"
+        )
+        with account_jwt.open(mode="r") as f:
+            return f.read()
+
+    def get_user_jwt(self, name: str) -> str:
+        operator_name = os.listdir(self.data_dir)
+        account_name = os.listdir(
+            Path(self.data_dir) / operator_name[0] / "accounts"
+        )
+        user_jwt = (
+            Path(self.data_dir)
+            / operator_name[0]
+            / "accounts"
+            / account_name[0]
+            / "users"
+            / f"{name}.jwt"
+        )
+        with user_jwt.open(mode="r") as f:
             return f.read()
