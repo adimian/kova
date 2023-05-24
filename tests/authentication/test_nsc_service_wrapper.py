@@ -61,7 +61,6 @@ def test_nsc_can_create_a_user(nsc: NscWrapper):
     creds = nsc.get_user_credentials(
         name="bo", account="bob", operator="bobby"
     )
-    logger.debug(creds)
     assert creds.count(".") == 4
 
 
@@ -117,7 +116,6 @@ def test_nsc_can_edit_a_user(nsc: NscWrapper):
     nsc.edit_user(name="bo", allow_pubsub="all", deny_pub="test.>")
 
     jwt = nsc.get_user_jwt(name="bo", account="bob", operator="bobby")
-    logger.debug(jwt)
     assert jwt.count(".") == 2
 
 
@@ -128,3 +126,26 @@ def test_nsc_can_not_edit_a_user_when_no_options(nsc: NscWrapper):
 
     with pytest.raises(NscException):
         nsc.edit_user(name="bo")
+
+
+def test_nsc_can_not_create_no_name_operator(nsc: NscWrapper):
+    with pytest.raises(NscException):
+        nsc.create_operator(name="")
+
+
+def test_nsc_can_create_same_operator(nsc: NscWrapper):
+    nsc.create_operator(name="bobby")
+    nsc.create_operator(name="bobby")
+
+    jwt = nsc.get_operator_jwt(name="bobby")
+    assert jwt.count(".") == 2
+
+
+def test_nsc_can_create_same_account(nsc: NscWrapper):
+    nsc.create_operator(name="bobby")
+
+    nsc.create_account(name="bob")
+    nsc.create_account(name="bob")
+
+    jwt = nsc.get_account_jwt(name="bob", operator="bobby")
+    assert jwt.count(".") == 2

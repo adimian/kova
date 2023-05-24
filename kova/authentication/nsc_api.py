@@ -11,6 +11,7 @@ nsc_router = APIRouter()
 
 class NscSettings(BaseSettings):
     app_name: str = "NSC service"
+    nsc_path: str = "nsc"
     nats_creds_directory: str
 
     def data_dir(self):
@@ -49,7 +50,7 @@ def set_up_operator_account(
     settings: NscSettings = Depends(get_nsc_settings),
 ):
     nsc = NscWrapper(
-        nsc_path="nsc",
+        nsc_path=settings.nsc_path,
         data_dir=settings.data_dir(),
         keystore_dir=settings.keystore_dir(),
     )

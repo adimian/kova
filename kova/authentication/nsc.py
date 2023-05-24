@@ -55,12 +55,30 @@ class NscWrapper:
         return arguments
 
     def create_operator(self, name: str):
-        self._execute("add", "operator", name)
-        logger.success(f"operator {name} created")
+        try:
+            self._execute("add", "operator", name)
+            logger.success(f"operator {name} created")
+        except NscException as exception:
+            if str(exception).startswith(
+                f"[ERR ] operator named {name} exists already"
+            ):
+                # TODO: how to since force doesn't work in this use case
+                # self._execute("add", "operator", name, "--force")
+                logger.debug(f"operator {name} already created")
+            else:
+                raise NscException(str(exception))
 
     def create_account(self, name: str):
-        self._execute("add", "account", name)
-        logger.success(f"account {name} created")
+        try:
+            self._execute("add", "account", name)
+            logger.success(f"account {name} created")
+        except NscException as exception:
+            if str(exception).startswith(
+                f'Error: the account "{name}" already exists'
+            ):
+                logger.debug(f"account {name} already created")
+            else:
+                raise NscException(str(exception))
 
     def create_user(self, name: str, **kwargs):
         arguments = self._get_argument(**kwargs)
