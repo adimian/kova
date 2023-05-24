@@ -102,3 +102,16 @@ class NscWrapper:
         )
         with user_jwt.open(mode="r") as f:
             return f.read()
+
+    def get_user_credentials(
+        self, name: str, account: str, operator: str
+    ) -> str:
+        user_credentials = (
+            Path(self.keystore_dir)
+            / "creds"
+            / operator
+            / account
+            / f"{name}.creds"
+        )
+        with user_credentials.open(mode="r") as f:
+            return f.read()

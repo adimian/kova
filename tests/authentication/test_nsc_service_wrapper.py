@@ -58,6 +58,12 @@ def test_nsc_can_create_a_user(nsc: NscWrapper):
     jwt = nsc.get_user_jwt(name="bo", account="bob", operator="bobby")
     assert jwt.count(".") == 2
 
+    creds = nsc.get_user_credentials(
+        name="bo", account="bob", operator="bobby"
+    )
+    logger.debug(creds)
+    assert creds.count(".") == 4
+
 
 def test_nsc_can_create_a_user_with_permission(nsc: NscWrapper):
     nsc.create_operator(name="bobby")
