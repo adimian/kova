@@ -11,6 +11,8 @@ from kova.authentication.nsc_api import (
     get_nsc_settings,
 )
 
+from kova.authentication.nsc import NscException
+
 
 @pytest.fixture
 def test_nsc_settings():
@@ -40,3 +42,31 @@ def test_set_up_operator_and_account(nsc_client):
     )
     assert res.status_code == 200, res.text
     logger.debug(res.json())
+
+
+def test_create_user_credentials(nsc_client):
+    res = nsc_client.post(
+        "/new-user",
+        json={"operator": "bobby", "account": "bob", "name": "123"},
+    )
+    assert res.status_code == 200, res.text
+
+    credentials = res.json()
+    logger.debug(f" User credentials : {credentials}")
+    assert credentials.count(".") == 4
+
+
+def test_can_not_create_user_wrong_account(nsc_client):
+    with pytest.raises(NscException):
+        nsc_client.post(
+            "/new-user",
+            json={"operator": "bobby", "account": "bab", "name": "123"},
+        )
+
+
+def test_can_not_create_user_twice(nsc_client):
+    with pytest.raises(NscException):
+        nsc_client.post(
+            "/new-user",
+            json={"operator": "bobby", "account": "bob", "name": "123"},
+        )
