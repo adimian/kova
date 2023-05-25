@@ -18,7 +18,11 @@ from kova.authentication.nsc import NscException
 def test_nsc_settings():
     tmp = Path(tempfile.gettempdir()) / "nsc-creds"
     tmp.mkdir(exist_ok=True)
-    return NscSettings(nats_creds_directory=tmp.as_posix())
+    return NscSettings(
+        nats_creds_directory=tmp.as_posix(),
+        operator_name="bobby",
+        account_name="bob",
+    )
 
 
 @pytest.fixture
@@ -41,13 +45,12 @@ def test_set_up_operator_and_account(nsc_client):
         "/new-setup", json={"operator": "bobby", "account": "bob"}
     )
     assert res.status_code == 200, res.text
-    logger.debug(res.json())
 
 
 def test_create_user_credentials(nsc_client):
     res = nsc_client.post(
         "/new-user",
-        json={"operator": "bobby", "account": "bob", "name": "123"},
+        json={"name": "123"},
     )
     assert res.status_code == 200, res.text
 
@@ -56,11 +59,18 @@ def test_create_user_credentials(nsc_client):
     assert credentials.count(".") == 4
 
 
+def test_set_up_new_account(nsc_client):
+    res = nsc_client.post(
+        "/new-setup", json={"operator": "bobby", "account": "alice"}
+    )
+    assert res.status_code == 200, res.text
+
+
 def test_can_not_create_user_wrong_account(nsc_client):
     with pytest.raises(NscException):
         nsc_client.post(
             "/new-user",
-            json={"operator": "bobby", "account": "bab", "name": "123"},
+            json={"name": "123", "account": "charlie"},
         )
 
 
@@ -68,5 +78,5 @@ def test_can_not_create_user_twice(nsc_client):
     with pytest.raises(NscException):
         nsc_client.post(
             "/new-user",
-            json={"operator": "bobby", "account": "bob", "name": "123"},
+            json={"name": "123"},
         )

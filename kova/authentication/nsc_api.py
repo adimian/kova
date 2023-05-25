@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends
 from functools import lru_cache
 
+
 from pydantic import BaseModel, BaseSettings
 from pathlib import Path
 
@@ -13,6 +14,8 @@ class NscSettings(BaseSettings):
     app_name: str = "NSC service"
     nsc_path: str = "nsc"
     nats_creds_directory: str
+    operator_name: str | None = None
+    account_name: str | None = None
 
     def data_dir(self):
         return (Path(self.nats_creds_directory) / "stores").as_posix()
@@ -33,9 +36,12 @@ class SetUpPostModel(BaseModel):
 
 
 class CreateUserPostModel(BaseModel):
-    operator: str
-    account: str
     name: str
+    account: str | None = None
+
+
+class NscAPIException(Exception):
+    pass
 
 
 @nsc_router.get("/info")
@@ -64,7 +70,7 @@ def set_up_operator_account(
     nsc.create_operator(name=payload.operator)
     nsc.create_account(name=payload.account)
 
-    return nsc.get_operator_jwt(payload.operator)
+    return nsc.get_account_jwt(operator=payload.operator, name=payload.account)
 
 
 @nsc_router.post("/new-user")
@@ -78,16 +84,27 @@ def create_user(
         keystore_dir=settings.keystore_dir(),
     )
 
+    account = ""
+    if payload.account is None and settings.account_name is None:
+        raise NscAPIException("No Account Provided")
+    elif payload.account is not None:
+        account = payload.account
+    elif settings.account_name is not None:
+        account = settings.account_name
+
+    if settings.operator_name is None:
+        raise NscAPIException("No Operator Provided")
+
     nsc.create_user(
         name=payload.name,
         allow_pub=f"{payload.name}.>",
         allow_sub="_INBOX.>",
         expiry="6M",
-        account=payload.account,
+        account=account,
     )
 
     creds = nsc.get_user_credentials(
-        name=payload.name, account=payload.account, operator=payload.operator
+        name=payload.name, account=account, operator=settings.operator_name
     )
     return creds
 
