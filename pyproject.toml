@@ -29,6 +29,7 @@ httpx = "^0.24.0"
 email-validator = "^2.0.0.post2"
 python-ulid = "^1.1.0"
 psycopg2-binary = "^2.9.6"
+requests = "^2.31.0"
 
 
 [tool.poetry.group.dev.dependencies]

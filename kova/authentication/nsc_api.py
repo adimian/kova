@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, Depends
 from functools import lru_cache
-
+from typing import List
 
 from pydantic import BaseModel, BaseSettings
 from pathlib import Path
@@ -16,6 +16,9 @@ class NscSettings(BaseSettings):
     nats_creds_directory: str
     operator_name: str | None = None
     account_name: str | None = None
+    expiry: str = "6M"
+    allow_pub: List[str] | None = None
+    allow_sub: List[str] = ["_INBOX.>"]
 
     def data_dir(self):
         return (Path(self.nats_creds_directory) / "stores").as_posix()
@@ -95,11 +98,15 @@ def create_user(
     if settings.operator_name is None:
         raise NscAPIException("No Operator Provided")
 
+    pub = [f"{payload.name}.>"]
+    if settings.allow_pub is not None:
+        pub.extend(settings.allow_pub)
+
     nsc.create_user(
         name=payload.name,
-        allow_pub=f"{payload.name}.>",
-        allow_sub="_INBOX.>",
-        expiry="6M",
+        allow_pub=",".join(pub),
+        allow_sub=",".join(settings.allow_sub),
+        expiry=settings.expiry,
         account=account,
     )
 
