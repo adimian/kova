@@ -41,3 +41,11 @@ pytest-asyncio = "^0.20.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = '-m "not integration"'
+markers = [
+  "integration: integration tests (deselect with '-m \"not integration\")",
+]

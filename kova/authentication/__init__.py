@@ -1,3 +1,4 @@
+import requests
 from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
@@ -16,6 +17,28 @@ class RegisterPostModel(BaseModel):
 
 class LoginPostModel(BaseModel):
     email: EmailStr
+
+
+class BaseNscClient:
+    def get_credentials(self, name: str) -> str:
+        raise NotImplementedError()
+
+
+class NscClient(BaseNscClient):
+    def get_credentials(self, name: str) -> str:
+        res = requests.post("...", json={"name": name})
+        if res.status_code == 200:
+            return res.json()
+        raise ValueError()
+
+
+class TestNscClient(BaseNscClient):
+    def get_credentials(self, name: str) -> str:
+        return f"very-serious-credentials-{name}"
+
+
+def get_nsc_client() -> NscClient:
+    return NscClient()
 
 
 @router.post("/register")
@@ -40,6 +63,7 @@ async def register_user(
 async def login_user(
     payload: LoginPostModel,
     session: Session = Depends(get_session),
+    nsc_client: BaseNscClient = Depends(get_nsc_client),
 ):
     query = session.execute(select(User.id).where(User.email == payload.email))
     user = query.one_or_none()
@@ -47,7 +71,7 @@ async def login_user(
     if user is None:
         raise HTTPException(status_code=404, detail="Email not registered")
     else:
-        credentials = None  # TODO : using str(user.id)
+        credentials = nsc_client.get_credentials(user.id)
     return credentials
 
 
