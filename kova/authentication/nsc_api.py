@@ -7,10 +7,18 @@ from pathlib import Path
 
 from kova.authentication.nsc import NscWrapper
 
+import uvicorn
+
 nsc_router = APIRouter()
+
+ENV_FILE = ".env"
 
 
 class NscSettings(BaseSettings):
+    class Config:
+        env_prefix = "nsc_"
+        env_file = ENV_FILE
+
     app_name: str = "NSC service"
     nsc_path: str = "nsc"
     nats_creds_directory: str
@@ -121,3 +129,8 @@ def nsc_app_maker():
     app.include_router(router=nsc_router)
 
     return app
+
+
+if __name__ == "__main__":
+    app = nsc_app_maker()
+    uvicorn.run(app, port=4000, host="0.0.0.0")

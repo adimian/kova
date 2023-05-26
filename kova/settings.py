@@ -104,6 +104,8 @@ class Settings(BaseSettings):
 
     nats_servers: str | list[str] = ["nats://localhost:4222"]
 
+    nsc_api: str = "http://localhost:4000"
+
     sentry_dsn: HttpUrl | None = None
 
 

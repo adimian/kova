@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from kova.db import get_session
 from kova.db.models import User
 
+from kova.settings import get_settings
+
 
 router = APIRouter()
 
@@ -20,20 +22,23 @@ class LoginPostModel(BaseModel):
 
 
 class BaseNscClient:
-    def get_credentials(self, name: str) -> str:
+    def create_user(self, name: str) -> str:
         raise NotImplementedError()
 
 
 class NscClient(BaseNscClient):
-    def get_credentials(self, name: str) -> str:
-        res = requests.post("...", json={"name": name})
+    def create_user(self, name: str) -> str:
+        settings = get_settings()
+        res = requests.post(
+            f"{settings.nsc_api}/new-user", json={"name": name}
+        )
         if res.status_code == 200:
             return res.json()
         raise ValueError()
 
 
 class TestNscClient(BaseNscClient):
-    def get_credentials(self, name: str) -> str:
+    def create_user(self, name: str) -> str:
         return f"very-serious-credentials-{name}"
 
 
@@ -71,7 +76,7 @@ async def login_user(
     if user is None:
         raise HTTPException(status_code=404, detail="Email not registered")
     else:
-        credentials = nsc_client.get_credentials(user.id)
+        credentials = nsc_client.create_user(str(user.id))
     return credentials
 
 

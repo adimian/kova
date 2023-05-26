@@ -27,7 +27,7 @@ def test_nsc_test_client_can_get_login(session):
     session.commit()
 
     client = TestNscClient()
-    credentials = client.get_credentials(name=user.id)
+    credentials = client.create_user(name=str(user.id))
 
     assert credentials
 
@@ -39,6 +39,7 @@ def test_nsc_live_client_can_get_login(session):
     session.commit()
 
     client = NscClient()
-    credentials = client.get_credentials(name=user.id)
+    credentials = client.create_user(name=str(user.id))
 
     assert credentials
+    assert credentials.count(".") == 4
