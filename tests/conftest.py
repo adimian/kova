@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.ddl import DropSchema, CreateSchema
 from starlette.testclient import TestClient
 
-from kova.authentication import app_maker
+from kova.authentication import app_maker, get_nsc_client, TestNscClient
 from kova.db import Base
 from kova.db import get_session
 from kova.router import InMemoryQueue
@@ -103,6 +103,7 @@ def app(
 ):
     app = app_maker()
     app.dependency_overrides[get_session] = lambda: session
+    app.dependency_overrides[get_nsc_client] = lambda: TestNscClient()
     return app
 
 
