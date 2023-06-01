@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pingpong;
+
+message PingRequest {
+  string destination =1;
+  string message = 2;
+}
+
+message PongResponse {
+  string destination =1;
+  string message = 2;
+}

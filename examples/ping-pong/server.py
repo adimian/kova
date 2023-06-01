@@ -8,16 +8,25 @@
 
 from loguru import logger
 
-from kova.protocol.ping_pb2 import EchoRequest
+from kova.current_user import CurrentUser
+from kova.protocol.pingpong_pb2 import PingRequest
 from kova.server import Server, Router
+from kova.message import Publish
 
 
 router = Router()
 
 
 @router.subscribe("*.ping")
-async def ping_pong(msg: EchoRequest):
-    logger.debug(f"received message: {msg.message}")
+async def ping_pong(msg: PingRequest, current_user: CurrentUser):
+
+    logger.debug(f"received message: {msg.message} for {msg.destination}")
+    relay = PingRequest()
+    subject = f"{msg.destination}.ping"
+    relay.destination = current_user.name
+    relay.message = msg.message
+    publish = Publish.get_instance(router)
+    await publish(subject=subject, payload=relay.SerializeToString())
 
 
 server = Server()

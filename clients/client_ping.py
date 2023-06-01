@@ -18,7 +18,7 @@ import sys
 
 import nats
 
-from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
+from kova.protocol.pingpong_pb2 import PingRequest, PongResponse
 
 
 def show_usage():
@@ -47,6 +47,7 @@ async def run():
     parser.add_argument("--creds", default="")
     parser.add_argument("--queue", default="")
     parser.add_argument("--ping", default=False, action="store_true")
+    parser.add_argument("--destination", default="")
     args, unknown = parser.parse_known_args()
 
     data = args.data
@@ -84,14 +85,15 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    req = EchoRequest()
+    req = PingRequest()
+    req.destination = args.destination
     req.message = data
     payload = req.SerializeToString()
 
     if args.ping:
         response = await nc.request(args.subject, payload, timeout=10)
         print(f"Send message [{args.subject}] : '{data}'")
-        res = EchoResponse.FromString(response.data)
+        res = PongResponse.FromString(response.data)
         print(f"Got response: {res.message}")
     else:
         await nc.subscribe(args.subject, cb=subscribe_handler)
