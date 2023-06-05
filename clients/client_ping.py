@@ -18,7 +18,7 @@ import sys
 
 import nats
 
-from kova.protocol.pingpong_pb2 import PingRequest, PongResponse
+from kova.protocol.pingpong_pb2 import PingRequest
 
 
 def show_usage():
@@ -61,15 +61,16 @@ async def run():
         print("Got reconnected to NATS...")
 
     async def subscribe_handler(msg):
-        subject = msg.subject
-        reply = msg.reply
-        data = msg.data.decode()
-        print(
-            "Received a message on '{subject} {reply}': {data}".format(
-                subject=subject, reply=reply, data=data
-            )
-        )
-        await msg.respond(b"pong")
+        print("test ...")
+        req = PingRequest.FromString(msg.data)
+        print(f"Received a message on '{msg.subject}': {req.message}")
+        res = PingRequest()
+        res.destination = req.destination
+        res.original = True
+        res.message = "pong"
+        payload = res.SerializeToString()
+
+        await nc.publish(args.subject, payload)
 
     options = {"error_cb": error_cb, "reconnected_cb": reconnected_cb}
 
@@ -87,16 +88,16 @@ async def run():
 
     req = PingRequest()
     req.destination = args.destination
+    req.original = True
     req.message = data
     payload = req.SerializeToString()
 
     if args.ping:
-        response = await nc.request(args.subject, payload, timeout=10)
+        await nc.publish(args.subject, payload)
         print(f"Send message [{args.subject}] : '{data}'")
-        res = PongResponse.FromString(response.data)
-        print(f"Got response: {res.message}")
-    else:
-        await nc.subscribe(args.subject, cb=subscribe_handler)
+
+    await nc.subscribe(args.subject, cb=subscribe_handler)
+    print(f"Listening for message on [{args.subject}]")
 
     await nc.flush()
     await nc.drain()
@@ -106,6 +107,7 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(run())
+        loop.run_forever()
     except RuntimeError:
         print("RuntimeError")
     finally:

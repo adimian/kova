@@ -4,10 +4,12 @@ package pingpong;
 
 message PingRequest {
   string destination =1;
-  string message = 2;
+  bool original = 2;
+  string message = 3;
 }
 
 message PongResponse {
   string destination =1;
-  string message = 2;
+  bool original = 2;
+  string message = 3;
 }
