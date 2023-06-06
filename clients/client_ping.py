@@ -61,16 +61,16 @@ async def run():
         print("Got reconnected to NATS...")
 
     async def subscribe_handler(msg):
-        print("test ...")
         req = PingRequest.FromString(msg.data)
         print(f"Received a message on '{msg.subject}': {req.message}")
         res = PingRequest()
         res.destination = req.destination
         res.original = True
-        res.message = "pong"
+        res.message = data
         payload = res.SerializeToString()
 
         await nc.publish(args.subject, payload)
+        print(f"Send message [{args.subject}] : '{res.message}'")
 
     options = {"error_cb": error_cb, "reconnected_cb": reconnected_cb}
 
