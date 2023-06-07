@@ -32,6 +32,7 @@ async def ping_pong(msg: PingRequest, current_user: CurrentUser):
 
         publish = Publish.get_instance(router)
         await publish(subject=subject, payload=payload)
+        logger.debug(f"Send message: {relay.message} on {subject}")
     else:
         logger.debug("Relay message not processed")
 

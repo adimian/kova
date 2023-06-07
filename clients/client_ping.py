@@ -60,17 +60,22 @@ async def run():
     async def reconnected_cb():
         print("Got reconnected to NATS...")
 
-    async def subscribe_handler(msg):
+    async def ping_handler(msg):
+        req = PingRequest.FromString(msg.data)
+        if req.message != data:
+            print(f"Received a message on '{msg.subject}': {req.message}")
+            res = PingRequest()
+            res.destination = req.destination
+            res.original = True
+            res.message = data
+            payload = res.SerializeToString()
+
+            await nc.publish(args.subject, payload)
+            print(f"Send message [{args.subject}] : '{res.message}'")
+
+    async def pong_handler(msg):
         req = PingRequest.FromString(msg.data)
         print(f"Received a message on '{msg.subject}': {req.message}")
-        res = PingRequest()
-        res.destination = req.destination
-        res.original = True
-        res.message = data
-        payload = res.SerializeToString()
-
-        await nc.publish(args.subject, payload)
-        print(f"Send message [{args.subject}] : '{res.message}'")
 
     options = {"error_cb": error_cb, "reconnected_cb": reconnected_cb}
 
@@ -95,12 +100,14 @@ async def run():
     if args.ping:
         await nc.publish(args.subject, payload)
         print(f"Send message [{args.subject}] : '{data}'")
+        await nc.subscribe(args.subject, cb=pong_handler)
+        print(f"Listening for message on [{args.subject}]")
 
-    await nc.subscribe(args.subject, cb=subscribe_handler)
-    print(f"Listening for message on [{args.subject}]")
+    else:
+        await nc.subscribe(args.subject, cb=ping_handler)
+        print(f"Listening for message on [{args.subject}]")
 
     await nc.flush()
-    await nc.drain()
 
 
 if __name__ == "__main__":
@@ -112,3 +119,4 @@ if __name__ == "__main__":
         print("RuntimeError")
     finally:
         loop.close()
+        print("End connexion")
