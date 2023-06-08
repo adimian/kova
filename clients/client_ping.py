@@ -66,7 +66,7 @@ async def run():
     async def ping_handler(msg):
         req = PingRequest.FromString(msg.data)
         if req.origin != args.subject:
-            print(f"Received a message on '{msg.subject}': {req.message}")
+            print(f"Received a message on [{msg.subject}]: '{req.message}'")
             res = PingRequest()
             res.destination = req.origin
             res.origin = args.subject
@@ -74,11 +74,11 @@ async def run():
             payload = res.SerializeToString()
 
             await nc.publish(args.subject, payload)
-            print(f"Send message [{args.subject}] : '{res.message}'")
+            print(f"Send message on [{args.subject}] : '{res.message}'")
 
     async def pong_handler(msg):
         req = PingRequest.FromString(msg.data)
-        print(f"Received a message on '{msg.subject}': {req.message}")
+        print(f"Received a message on [{msg.subject}]: '{req.message}'")
 
     options = {"error_cb": error_cb, "reconnected_cb": reconnected_cb}
 
@@ -102,7 +102,7 @@ async def run():
 
     if args.ping:
         await nc.publish(args.subject, payload)
-        print(f"Send message [{args.subject}] : '{data}'")
+        print(f"Send message on [{args.subject}] : '{data}'")
         await nc.subscribe(args.subject, cb=pong_handler)
         print(f"Listening for message on [{args.subject}]")
 

@@ -82,12 +82,12 @@ async def run():
 
     if args.request:
         response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested [{args.subject}] : '{data}'")
+        print(f"Requested on [{args.subject}] : '{data}'")
         res = EchoResponse.FromString(response.data)
-        print(f"Got response: {res.message}")
+        print(f"Got response: '{res.message}'")
     else:
         await nc.publish(args.subject, payload)
-        print(f"Published [{args.subject}] : '{data}'")
+        print(f"Published on [{args.subject}] : '{data}'")
     await nc.flush()
     await nc.drain()
 
