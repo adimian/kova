@@ -19,14 +19,15 @@ router = Router()
 
 @router.subscribe("*.ping")
 async def ping_pong(msg: PingRequest, current_user: CurrentUser):
-    if msg.first:
+    name = msg.origin.split(".")
+    if name[0] == current_user.name:
+
         logger.debug(f"received message: {msg.message} for {msg.destination}")
 
         relay = PingRequest()
         subject = f"{msg.destination}.ping"
 
         relay.destination = msg.destination
-        relay.first = False
         relay.message = msg.message
         relay.origin = current_user.name
         payload = relay.SerializeToString()
@@ -34,8 +35,6 @@ async def ping_pong(msg: PingRequest, current_user: CurrentUser):
         publish = Publish.get_instance(router)
         await publish(subject=subject, payload=payload)
         logger.debug(f"Send message: {relay.message} on {subject}")
-    else:
-        logger.debug("Relay message not processed")
 
 
 server = Server()

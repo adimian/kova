@@ -70,7 +70,6 @@ async def run():
             res = PingRequest()
             res.destination = req.origin
             res.origin = args.subject
-            res.first = True
             res.message = data
             payload = res.SerializeToString()
 
@@ -97,7 +96,6 @@ async def run():
 
     req = PingRequest()
     req.destination = args.destination
-    req.first = True
     req.message = data
     req.origin = args.subject
     payload = req.SerializeToString()

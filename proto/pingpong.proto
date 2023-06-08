@@ -3,8 +3,7 @@ syntax = "proto3";
 package pingpong;
 
 message PingRequest {
-  bool first = 1;
-  string destination = 2;
-  string origin = 3;
-  string message = 4;
+  string destination = 1;
+  string origin = 2;
+  string message = 3;
 }
