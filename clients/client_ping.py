@@ -18,16 +18,19 @@ import sys
 
 import nats
 
-from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
+from kova.protocol.pingpong_pb2 import PingRequest
 
 
 def show_usage():
     usage = """
-nats-pub [-s SERVER] <subject> <data>
+python clients/client_ping.py -s <server> --creds <credentials>
+--destination <client> --data <data> --ping <subject>
+
 
 Example:
 
-nats-pub -s demo.nats.io greeting 'Hello World'
+python clients/client_ping.py -s demo.nats.io
+--destination client_pong --ping client_ping.ping
 """
     print(usage)
 
@@ -42,11 +45,12 @@ async def run():
 
     # e.g. nats-pub -s demo.nats.io hello "world"
     parser.add_argument("subject", default="hello", nargs="?")
-    parser.add_argument("-d", "--data", default="hello world")
+    parser.add_argument("-d", "--data", default="ping")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
-    parser.add_argument("--token", default="")
-    parser.add_argument("--request", default=False, action="store_true")
+    parser.add_argument("--queue", default="")
+    parser.add_argument("--ping", default=False, action="store_true")
+    parser.add_argument("--destination", default="")
     args, unknown = parser.parse_known_args()
 
     data = args.data
@@ -59,13 +63,27 @@ async def run():
     async def reconnected_cb():
         print("Got reconnected to NATS...")
 
+    async def ping_handler(msg):
+        req = PingRequest.FromString(msg.data)
+        if req.origin != args.subject:
+            print(f"Received a message on [{msg.subject}]: '{req.message}'")
+            res = PingRequest()
+            res.destination = req.origin
+            res.origin = args.subject
+            res.message = data
+            payload = res.SerializeToString()
+
+            await nc.publish(args.subject, payload)
+            print(f"Send message on [{args.subject}] : '{res.message}'")
+
+    async def pong_handler(msg):
+        req = PingRequest.FromString(msg.data)
+        print(f"Received a message on [{msg.subject}]: '{req.message}'")
+
     options = {"error_cb": error_cb, "reconnected_cb": reconnected_cb}
 
     if len(args.creds) > 0:
         options["user_credentials"] = args.creds
-
-    if args.token.strip() != "":
-        options["token"] = args.token.strip()
 
     try:
         if len(args.servers) > 0:
@@ -76,27 +94,32 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    req = EchoRequest()
+    req = PingRequest()
+    req.destination = args.destination
     req.message = data
+    req.origin = args.subject
     payload = req.SerializeToString()
 
-    if args.request:
-        response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested on [{args.subject}] : '{data}'")
-        res = EchoResponse.FromString(response.data)
-        print(f"Got response: '{res.message}'")
-    else:
+    if args.ping:
         await nc.publish(args.subject, payload)
-        print(f"Published on [{args.subject}] : '{data}'")
+        print(f"Send message on [{args.subject}] : '{data}'")
+        await nc.subscribe(args.subject, cb=pong_handler)
+        print(f"Listening for message on [{args.subject}]")
+
+    else:
+        await nc.subscribe(args.subject, cb=ping_handler)
+        print(f"Listening for message on [{args.subject}]")
+
     await nc.flush()
-    await nc.drain()
 
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(run())
+        loop.run_forever()
     except RuntimeError:
         print("RuntimeError")
     finally:
         loop.close()
+        print("End connexion")

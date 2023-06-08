@@ -14,7 +14,7 @@ python = "^3.10"
 nats-py = "^2.2.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.6"}
 asyncpg = "^0.27.0"
-protobuf = "^4.21.6"
+protobuf = "3.20.1"
 minio = "^7.1.13"
 alembic = "^1.10.2"
 pydantic = {extras = ["dotenv"], version = "^1.10.7"}
