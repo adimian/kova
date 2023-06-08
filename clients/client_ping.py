@@ -62,11 +62,12 @@ async def run():
 
     async def ping_handler(msg):
         req = PingRequest.FromString(msg.data)
-        if req.message != data:
+        if req.origin != args.subject:
             print(f"Received a message on '{msg.subject}': {req.message}")
             res = PingRequest()
-            res.destination = req.destination
-            res.original = True
+            res.destination = req.origin
+            res.origin = args.subject
+            res.first = True
             res.message = data
             payload = res.SerializeToString()
 
@@ -93,8 +94,9 @@ async def run():
 
     req = PingRequest()
     req.destination = args.destination
-    req.original = True
+    req.first = True
     req.message = data
+    req.origin = args.subject
     payload = req.SerializeToString()
 
     if args.ping:

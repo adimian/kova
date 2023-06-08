@@ -3,13 +3,15 @@ syntax = "proto3";
 package pingpong;
 
 message PingRequest {
-  string destination =1;
-  bool original = 2;
-  string message = 3;
+  bool first = 1;
+  string destination = 2;
+  string origin = 3;
+  string message = 4;
 }
 
 message PongResponse {
-  string destination =1;
-  bool original = 2;
-  string message = 3;
+  bool first = 1;
+  string destination = 2;
+  string origin = 3;
+  string message = 4;
 }
