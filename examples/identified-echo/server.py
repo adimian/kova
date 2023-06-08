@@ -21,14 +21,14 @@ router = Router()
 async def identified_request(
     msg: EchoRequest, current_user: CurrentUser, reply: Reply
 ):
-    logger.debug(f"received message: {msg.message}")
+    logger.debug(f"Received message: '{msg.message}'")
     if reply:
         res = EchoResponse()
         res.message = f"echo {msg.message} from {current_user.name}"
         await reply(res.SerializeToString())
-        logger.debug("response sent")
+        logger.debug("Response sent")
     else:
-        logger.warning("unable to reply")
+        logger.warning("Unable to reply")
 
 
 server = Server()
