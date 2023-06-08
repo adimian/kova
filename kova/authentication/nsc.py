@@ -62,8 +62,6 @@ class NscWrapper:
             if str(exception).startswith(
                 f"[ERR ] operator named {name} exists already"
             ):
-                # TODO: how to since force doesn't work in this use case
-                # self._execute("add", "operator", name, "--force")
                 logger.debug(f"operator {name} already created")
             else:
                 raise NscException(str(exception))
