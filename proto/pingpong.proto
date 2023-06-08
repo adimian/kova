@@ -8,10 +8,3 @@ message PingRequest {
   string origin = 3;
   string message = 4;
 }
-
-message PongResponse {
-  bool first = 1;
-  string destination = 2;
-  string origin = 3;
-  string message = 4;
-}

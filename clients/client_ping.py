@@ -23,11 +23,14 @@ from kova.protocol.pingpong_pb2 import PingRequest
 
 def show_usage():
     usage = """
-nats-pub [-s SERVER] <subject> <data>
+python clients/client_ping.py -s <server> --creds <credentials>
+--destination <client> --data <data> --ping <subject>
+
 
 Example:
 
-nats-pub -s demo.nats.io greeting 'Hello World'
+python clients/client_ping.py -s demo.nats.io
+--destination client_pong --ping client_ping.ping
 """
     print(usage)
 
