@@ -1,0 +1,5 @@
+site_name: Kova
+nav:
+    - Home: index.md
+    - Content: content.md
+theme: readthedocs
