@@ -1,4 +1,4 @@
-# Content
+# Components
 
 ## Lorem ipsum
 

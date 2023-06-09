@@ -1,17 +1,16 @@
-# Welcome to MkDocs
+# Welcome to Kova Documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+Message-based framework for buildling resilient mobile backends
 
-## Commands
+Based on the [NATS](https://github.com/nats-io) Messaging System.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+[![License][License-Image]][License-Url] [![Build][Build-Status-Image]][Build-Status-Url] [![Coverage][Coverage-Image]][Coverage-Url] [![Documentation Status][Documentation-Image]][Documentation-Url]
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+[License-Url]: https://www.apache.org/licenses/LICENSE-2.0
+[License-Image]: https://img.shields.io/badge/License-Apache2-blue.svg
+[Build-Status-Url]: https://travis-ci.org/adimian/kova
+[Build-Status-Image]: https://travis-ci.org/adimian/kova.svg?branch=master
+[Coverage-Url]: https://coveralls.io/github/adimian/kova?branch=master
+[Coverage-image]: https://coveralls.io/repos/github/adimian/kova/badge.svg?branch=master
+[Documentation-Url]: https://kova.readthedocs.io/en/latest/?badge=latest
+[Documentation-image]: https://readthedocs.org/projects/kova/badge/?version=latest

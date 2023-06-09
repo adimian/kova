@@ -1,5 +1,14 @@
 site_name: Kova
 nav:
     - Home: index.md
-    - Content: content.md
+    - Content :
+        - Components: 'component.md'
+        - Features: 'features.md'
+        - 'User Guide': 'user-guide.md'
+    - About:
+        - Authors: 'authors.md'
+        - License: 'license.md'
 theme: readthedocs
+
+markdown_extensions:
+  - admonition
