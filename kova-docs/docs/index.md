@@ -1,4 +1,4 @@
-# Welcome to Kova Documentation
+# Welcome to Kova Documentation ! ⭐
 
 Message-based framework for buildling resilient mobile backends
 
