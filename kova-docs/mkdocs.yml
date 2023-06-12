@@ -17,3 +17,4 @@ theme: readthedocs
 
 markdown_extensions:
   - admonition
+  - def_list

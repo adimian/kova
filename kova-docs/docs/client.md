@@ -9,7 +9,7 @@ Two examples are included here :
 
 ## Connection to NATS server
 
-The client is connected to the NATS server. Options such as the server adress or the user credentials can be provided.
+The client is connected to the NATS server. Options such as the server address or the user credentials can be provided.
 The connection is established through `nats.connect`.
 
 ````python

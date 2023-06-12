@@ -24,4 +24,6 @@ async def echo(msg: EchoRequest, reply: Reply):
         logger.warning("Unable to reply")
 
 ````
+
 This router listens on the `*.echo` queue. It will receive an EchoRequest and if the message needs a Reply will answer with an EchoResponse.
+The echo function will be called everytime a message is processed on the `*.echo` queue.

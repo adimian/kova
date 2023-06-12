@@ -1,5 +1,5 @@
 # Components
 
-## Lorem ipsum
+## Project Architecture
 
-%TODO% Architecture Schema
+![Architecture](img/Architecture.png)
