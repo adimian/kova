@@ -5,6 +5,11 @@ nav:
         - Components: 'component.md'
         - Features: 'features.md'
         - 'User Guide': 'user-guide.md'
+    - Examples :
+        - Messages: 'messages.md'
+        - Client: 'client.md'
+        - Router: 'router.md'
+        - Cache: 'cache.md'
     - About:
         - Authors: 'authors.md'
         - License: 'license.md'
