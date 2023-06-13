@@ -27,3 +27,10 @@ async def echo(msg: EchoRequest, reply: Reply):
 
 This router listens on the `*.echo` queue. It will receive an EchoRequest and if the message needs a Reply will answer with an EchoResponse.
 The echo function will be called everytime a message is processed on the `*.echo` queue.
+
+The router function (in this case `echo`) can take several parameters :
+
+- a Message : of the message type expected on this queue (here EchoRequest)
+- an optional Reply : if the router is supposed to answer, in the event of Request/Reply messaging
+- an optional CurrentUser : the user who sent the message
+- an optional Cache object

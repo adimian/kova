@@ -12,6 +12,12 @@ In order to use Kova, you will need several services running.
 
 ## Installation
 
+### Contributing
+
+- clone this repository
+- `make develop` to install all dependencies
+- `docker compose up -d` to run external services locally
+
 ### Install `nsc`
 
 ```bash
@@ -55,3 +61,5 @@ nats-server is the IP address of your NATS server such as `nats://localhost:4222
 ```bash
 $ python kova/authentication/nsc_api.py
 ```
+
+This service is used for user creation and setting up new Operator and Accounts. By default, it serves at ``http://localhost:4000``.

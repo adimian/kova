@@ -15,6 +15,8 @@ We use protobuf messages to allow for more flexibility and structure in the body
 Three protobuf message types are used in our examples : `PingRequest`, `EchoRequest`, `EchoReply`.
 These message types are defined in the `proto`and `kova/protocols` files.
 
+### New message type
+
 To create your own message type, write a `proto` file such as `proto/ping.proto`.
 ````python
 syntax = "proto3";
