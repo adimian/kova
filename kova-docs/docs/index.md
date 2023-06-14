@@ -1,6 +1,6 @@
 # Welcome to Kova Documentation ! ⭐
 
-Message-based framework for buildling resilient mobile backends
+Message-based framework for building resilient mobile backends
 
 Based on the [NATS](https://github.com/nats-io) Messaging System.
 

@@ -1,42 +1,18 @@
 # kova
 
-🔨Message-based framework for buildling resilient mobile backends
+Message-based framework for building resilient mobile backends
 
-## Description
+Based on the [NATS](https://github.com/nats-io) Messaging System.
 
-## Installation
+The documentation can be found at [Kova documentation](https://kova.readthedocs.io/en/latest/).
 
-### Install `nsc`
+[![License][License-Image]][License-Url] [![Build][Build-Status-Image]][Build-Status-Url] [![Coverage][Coverage-Image]][Coverage-Url] [![Documentation Status][Documentation-Image]][Documentation-Url]
 
-```
-brew tap nats-io/nats-tools
-brew install nats-io/nats-tools/nsc
-
-# to uninstall:
-brew uninstall nats-io/nats-tools/nsc
-brew untap nats-io/nats-tools
-```
-
-## Usage
-
-## Support
-
-## Roadmap
-
-## Contributing
-
-1. clone this repository
-2. `make develop` to install all dependencies
-3. `docker-compose up -d` to run external services locally
-
-### Echo server
-In terminal A (server) : `python kova/server.py --creds <path to credential file (.creds)> --queue <queue to use, by default echo>`
-
-In terminal B (client) : `python scripts/nats-pub.py -s <server ip> -- creds <path to credential file (.creds) [--request] test.echo`
-
-## Authors and acknowledgment
-Kova is brought to you by the following contributors:
-- Adimian Studio
-
-## License
-Apache License, Version 2.0
+[License-Url]: https://www.apache.org/licenses/LICENSE-2.0
+[License-Image]: https://img.shields.io/badge/License-Apache2-blue.svg
+[Build-Status-Url]: https://travis-ci.org/adimian/kova
+[Build-Status-Image]: https://travis-ci.org/adimian/kova.svg?branch=master
+[Coverage-Url]: https://coveralls.io/github/adimian/kova?branch=master
+[Coverage-image]: https://coveralls.io/repos/github/adimian/kova/badge.svg?branch=master
+[Documentation-Url]: https://kova.readthedocs.io/en/latest/?badge=latest
+[Documentation-image]: https://readthedocs.org/projects/kova/badge/?version=latest

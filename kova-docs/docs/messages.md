@@ -30,7 +30,7 @@ message EchoRequest {
 
 Then create the protobuf messages thanks to the command line :
 ````commandline
-poetry run protoc --proto_path=proto --python_out=kova/protocol proto/ping.proto
+make proto
 ````
 
 This will produce the `kova/protocol/ping_pb2.py` file needed to use the message later.
