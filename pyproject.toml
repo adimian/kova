@@ -38,6 +38,7 @@ pytest-cov = "^4.0.0"
 pdbpp = "^0.10.3"
 pre-commit = "^3.1.1"
 pytest-asyncio = "^0.20.3"
+mkdocs = "^1.4.3"
 
 [build-system]
 requires = ["poetry-core"]

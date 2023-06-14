@@ -1,0 +1,20 @@
+site_name: Kova
+nav:
+    - Home: index.md
+    - Content :
+        - Components: 'component.md'
+        - Features: 'features.md'
+        - 'User Guide': 'user-guide.md'
+    - Examples :
+        - Messages: 'messages.md'
+        - Client: 'client.md'
+        - Router: 'router.md'
+        - Cache: 'cache.md'
+    - About:
+        - Authors: 'authors.md'
+        - License: 'license.md'
+theme: readthedocs
+
+markdown_extensions:
+  - admonition
+  - def_list
