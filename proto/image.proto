@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package echo;
+
+message ImageRequest {
+  string name = 1;
+  bytes image = 2;
+}
+
+message ImageResponse {
+  string name = 1;
+  bytes image_cropped = 2;
+  bytes image_BW= 3;
+}
