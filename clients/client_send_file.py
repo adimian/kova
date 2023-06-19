@@ -21,7 +21,6 @@ import io
 import nats
 
 from PIL import Image
-from pathlib import Path
 
 from kova.protocol.image_pb2 import ImageRequest, ImageResponse
 
@@ -86,7 +85,8 @@ async def run():
     im.save(buf, format="PNG")
     byte_im = buf.getvalue()
 
-    path, name = os.path.split(data)
+    path, file = os.path.split(data)
+    name, ext = file.split(".")
 
     req = ImageRequest()
     req.name = name
@@ -96,22 +96,13 @@ async def run():
     if args.request:
         response = await nc.request(args.subject, payload, timeout=10)
         print(f"Requested on [{args.subject}] : '{name}'")
+
         res = ImageResponse.FromString(response.data)
-        print(f"Got response: '{res.name}'")
-
-        name_image, extension = name.split(".")
-        image_cropped = Image.open(io.BytesIO(res.image_cropped))
-        image_cropped.save(
-            Path(path) / f"{name_image}-cropped.png", "png", quality="keep"
+        print(
+            f"Got response: \n"
+            f"Image cropped available at {res.image_cropped_URL} \n"
+            f"Image black and white available at {res.image_BW_URL}"
         )
-        print(f"{name_image}-cropped.png saved")
-
-        image_BW = Image.open(io.BytesIO(res.image_BW))
-        image_BW.save(
-            Path(path) / f"{name_image}-BW.png", "png", quality="keep"
-        )
-        print(f"{name_image}-BW.png saved")
-
     else:
         await nc.publish(args.subject, payload)
         print(f"Published on [{args.subject}] : '{name}'")

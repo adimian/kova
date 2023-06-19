@@ -15,17 +15,17 @@ class ImageRequest(_message.Message):
     ) -> None: ...
 
 class ImageResponse(_message.Message):
-    __slots__ = ["name", "image_cropped", "image_BW"]
+    __slots__ = ["name", "image_cropped_URL", "image_BW_URL"]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    IMAGE_CROPPED_FIELD_NUMBER: _ClassVar[int]
-    IMAGE_BW_FIELD_NUMBER: _ClassVar[int]
+    IMAGE_CROPPED_URL_FIELD_NUMBER: _ClassVar[int]
+    IMAGE_BW_URL_FIELD_NUMBER: _ClassVar[int]
     name: str
-    image_cropped: bytes
-    image_BW: bytes
+    image_cropped_URL: str
+    image_BW_URL: str
 
     def __init__(
         self,
         name: _Optional[str] = ...,
-        image_cropped: _Optional[bytes] = ...,
-        image_BW: _Optional[bytes] = ...,
+        image_cropped_URL: _Optional[str] = ...,
+        image_BW_URL: _Optional[str] = ...,
     ) -> None: ...

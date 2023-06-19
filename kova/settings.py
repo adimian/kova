@@ -76,6 +76,7 @@ class Minio(BaseSettings):
     access_key: str = "minio"
     secret_key: str = "minio123"
     secure: bool = False
+    temp_path: str = "/tmp"
 
 
 class Redis(BaseSettings):

@@ -9,6 +9,6 @@ message ImageRequest {
 
 message ImageResponse {
   string name = 1;
-  bytes image_cropped = 2;
-  bytes image_BW= 3;
+  string image_cropped_URL = 2;
+  string image_BW_URL= 3;
 }
