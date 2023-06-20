@@ -122,4 +122,5 @@ def minio(settings):
         secret_key=settings.minio.secret_key,
         secure=settings.minio.secure,
     )
-    return client
+    minio_conf = {"client": client, "bucket": "minio-test"}
+    return minio_conf

@@ -1,20 +1,22 @@
 import io
 
-from loguru import logger
-
 
 def test_minio_can_create_bucket(minio):
-    found = minio.bucket_exists("minio-test")
-    if not found:
-        minio.make_bucket("minio-test")
-    else:
-        logger.debug("Bucket 'minio-test' already exists")
-
-    found = minio.bucket_exists("minio-test")
+    minio["client"].make_bucket(minio["bucket"])
+    found = minio["client"].bucket_exists(minio["bucket"])
     assert found
 
 
 def test_minio_can_put_object(minio):
-    minio.put_object("minio-test", "object-test", io.BytesIO(b"hello"), 5)
-    response = minio.get_object("minio-test", "object-test")
+    minio["client"].put_object(
+        minio["bucket"], "object-test", io.BytesIO(b"hello"), 5
+    )
+    response = minio["client"].get_object(minio["bucket"], "object-test")
     assert response.data == b"hello"
+
+
+def test_can_delete_bucket(minio):
+    minio["client"].remove_object(minio["bucket"], "object-test")
+    minio["client"].remove_bucket(minio["bucket"])
+    found = minio["client"].bucket_exists(minio["bucket"])
+    assert not found

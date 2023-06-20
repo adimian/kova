@@ -27,11 +27,14 @@ from kova.protocol.image_pb2 import ImageRequest, ImageResponse
 
 def show_usage():
     usage = """
-nats-pub [-s SERVER] <subject> <data>
+python clients/client_send_file.py -s <server> --creds <credentials>
+--destination <client> --data <image> --request <subject>
+
 
 Example:
 
-nats-pub -s demo.nats.io greeting 'Hello World'
+python clients/client_send_file.py -s demo.nats.io
+--data path/to/image.png test.send_file
 """
     print(usage)
 
@@ -44,9 +47,8 @@ def show_usage_and_die():
 async def run():
     parser = argparse.ArgumentParser()
 
-    # e.g. nats-pub -s demo.nats.io hello "world"
     parser.add_argument("subject", default="hello", nargs="?")
-    parser.add_argument("-d", "--data", default="./lena")
+    parser.add_argument("-d", "--data", default="./lenna.png")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
