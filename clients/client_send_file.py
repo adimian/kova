@@ -16,11 +16,8 @@ import argparse
 import asyncio
 import sys
 import os
-import io
 
 import nats
-
-from PIL import Image
 
 from kova.protocol.image_pb2 import ImageRequest, ImageResponse
 
@@ -82,10 +79,8 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    im = Image.open(data)
-    buf = io.BytesIO()
-    im.save(buf, format="PNG")
-    byte_im = buf.getvalue()
+    with open(data, mode="rb") as f:
+        byte_im = f.read()
 
     path, file = os.path.split(data)
     name, ext = file.split(".")
