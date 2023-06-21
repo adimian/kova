@@ -4,11 +4,15 @@ package echo;
 
 message ImageRequest {
   string name = 1;
-  bytes image = 2;
+  bool confirmation = 2;
 }
 
 message ImageResponse {
+  string URL = 1;
+}
+
+message ImageModifiedResponse {
   string name = 1;
   string image_cropped_URL = 2;
-  string image_BW_URL= 3;
+  string image_BW_URL = 3;
 }

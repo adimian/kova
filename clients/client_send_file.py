@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import requests
 import argparse
 import asyncio
 import sys
@@ -19,7 +19,11 @@ import os
 
 import nats
 
-from kova.protocol.image_pb2 import ImageRequest, ImageResponse
+from kova.protocol.image_pb2 import (
+    ImageRequest,
+    ImageResponse,
+    ImageModifiedResponse,
+)
 
 
 def show_usage():
@@ -49,7 +53,7 @@ async def run():
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
-    parser.add_argument("--request", default=False, action="store_true")
+    parser.add_argument("--send", default=False, action="store_true")
     args, unknown = parser.parse_known_args()
 
     data = args.data
@@ -79,30 +83,49 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    with open(data, mode="rb") as f:
-        byte_im = f.read()
-
     path, file = os.path.split(data)
     name, ext = file.split(".")
 
     req = ImageRequest()
     req.name = name
-    req.image = byte_im
-    payload = req.SerializeToString()
 
-    if args.request:
+    if args.send:
+        req = ImageRequest()
+        req.name = name
+
+        req.confirmation = False
+        payload = req.SerializeToString()
+
         response = await nc.request(args.subject, payload, timeout=10)
         print(f"Requested on [{args.subject}] : '{name}'")
 
         res = ImageResponse.FromString(response.data)
+        print(f"Got response: \n" f"Send image at {res.URL}")
+
+        with open(data, mode="rb") as f:
+            byte_im = f.read()
+
+        res = requests.post(res.URL, data=byte_im, verify=False)
+        if res.status_code == 200:
+            print("yes")
+        else:
+            print(res.text)
+
+        req = ImageRequest()
+        req.name = name
+
+        req.confirmation = False
+        payload = req.SerializeToString()
+
+        response = await nc.request(args.subject, payload, timeout=10)
+        print(f"Requested on [{args.subject}] : '{name}'")
+
+        res = ImageModifiedResponse.FromString(response.data)
         print(
             f"Got response: \n"
             f"Image cropped available at {res.image_cropped_URL} \n"
             f"Image black and white available at {res.image_BW_URL}"
         )
-    else:
-        await nc.publish(args.subject, payload)
-        print(f"Published on [{args.subject}] : '{name}'")
     await nc.flush()
     await nc.drain()
 

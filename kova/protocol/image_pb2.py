@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="echo",
     syntax="proto3",
     serialized_pb=_b(
-        '\n\x0bimage.proto\x12\x04\x65\x63ho"+\n\x0cImageRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05image\x18\x02 \x01(\x0c"N\n\rImageResponse\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11image_cropped_URL\x18\x02 \x01(\t\x12\x14\n\x0cimage_BW_URL\x18\x03 \x01(\tb\x06proto3'
+        '\n\x0bimage.proto\x12\x04\x65\x63ho"2\n\x0cImageRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63onfirmation\x18\x02 \x01(\x08"\x1c\n\rImageResponse\x12\x0b\n\x03URL\x18\x01 \x01(\t"V\n\x15ImageModifiedResponse\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11image_cropped_URL\x18\x02 \x01(\t\x12\x14\n\x0cimage_BW_URL\x18\x03 \x01(\tb\x06proto3'
     ),
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -53,15 +53,15 @@ _IMAGEREQUEST = _descriptor.Descriptor(
             options=None,
         ),
         _descriptor.FieldDescriptor(
-            name="image",
-            full_name="echo.ImageRequest.image",
+            name="confirmation",
+            full_name="echo.ImageRequest.confirmation",
             index=1,
             number=2,
-            type=12,
-            cpp_type=9,
+            type=8,
+            cpp_type=7,
             label=1,
             has_default_value=False,
-            default_value=_b(""),
+            default_value=False,
             message_type=None,
             enum_type=None,
             containing_type=None,
@@ -79,7 +79,7 @@ _IMAGEREQUEST = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[],
     serialized_start=21,
-    serialized_end=64,
+    serialized_end=71,
 )
 
 
@@ -91,8 +91,46 @@ _IMAGERESPONSE = _descriptor.Descriptor(
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
+            name="URL",
+            full_name="echo.ImageResponse.URL",
+            index=0,
+            number=1,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b("").decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=73,
+    serialized_end=101,
+)
+
+
+_IMAGEMODIFIEDRESPONSE = _descriptor.Descriptor(
+    name="ImageModifiedResponse",
+    full_name="echo.ImageModifiedResponse",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
             name="name",
-            full_name="echo.ImageResponse.name",
+            full_name="echo.ImageModifiedResponse.name",
             index=0,
             number=1,
             type=9,
@@ -109,7 +147,7 @@ _IMAGERESPONSE = _descriptor.Descriptor(
         ),
         _descriptor.FieldDescriptor(
             name="image_cropped_URL",
-            full_name="echo.ImageResponse.image_cropped_URL",
+            full_name="echo.ImageModifiedResponse.image_cropped_URL",
             index=1,
             number=2,
             type=9,
@@ -126,7 +164,7 @@ _IMAGERESPONSE = _descriptor.Descriptor(
         ),
         _descriptor.FieldDescriptor(
             name="image_BW_URL",
-            full_name="echo.ImageResponse.image_BW_URL",
+            full_name="echo.ImageModifiedResponse.image_BW_URL",
             index=2,
             number=3,
             type=9,
@@ -150,12 +188,15 @@ _IMAGERESPONSE = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=66,
-    serialized_end=144,
+    serialized_start=103,
+    serialized_end=189,
 )
 
 DESCRIPTOR.message_types_by_name["ImageRequest"] = _IMAGEREQUEST
 DESCRIPTOR.message_types_by_name["ImageResponse"] = _IMAGERESPONSE
+DESCRIPTOR.message_types_by_name[
+    "ImageModifiedResponse"
+] = _IMAGEMODIFIEDRESPONSE
 
 ImageRequest = _reflection.GeneratedProtocolMessageType(
     "ImageRequest",
@@ -178,6 +219,17 @@ ImageResponse = _reflection.GeneratedProtocolMessageType(
     ),
 )
 _sym_db.RegisterMessage(ImageResponse)
+
+ImageModifiedResponse = _reflection.GeneratedProtocolMessageType(
+    "ImageModifiedResponse",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_IMAGEMODIFIEDRESPONSE,
+        __module__="image_pb2"
+        # @@protoc_insertion_point(class_scope:echo.ImageModifiedResponse)
+    ),
+)
+_sym_db.RegisterMessage(ImageModifiedResponse)
 
 
 # @@protoc_insertion_point(module_scope)

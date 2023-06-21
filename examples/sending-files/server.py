@@ -1,6 +1,10 @@
 from datetime import timedelta
 
-from kova.protocol.image_pb2 import ImageRequest, ImageResponse
+from kova.protocol.image_pb2 import (
+    ImageRequest,
+    ImageResponse,
+    ImageModifiedResponse,
+)
 from kova.server import Server, Router
 from kova.message import Reply
 from kova.current_user import CurrentUser
@@ -17,9 +21,16 @@ import io
 router = Router()
 
 
+def image_to_bytes(img: Image):
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue(), buf.tell()
+
+
 def save_image(client: Minio, image: Image, path: str, name: str, user: str):
     image.save(Path(path) / name, "png", quality="keep")
-    client.fput_object(user, name, Path(path) / name)
+    byte_image, image_size = image_to_bytes(image)
+    client.put_object(user, name, io.BytesIO(byte_image), image_size)
 
 
 @router.subscribe("*.send_file")
@@ -35,43 +46,30 @@ async def file_request(
         secure=settings.minio.secure,
     )
 
-    found = client.bucket_exists(current_user.name)
-    if not found:
-        client.make_bucket(current_user.name)
-    else:
-        logger.debug(f"Bucket {current_user.name} already exists")
+    if msg.confirmation:
+        response = client.get_object(current_user.name, f"{msg.name}.png")
 
-    logger.debug(f"message : {msg.name}")
+        image = Image.open(io.BytesIO(response))
 
-    image = Image.open(io.BytesIO(msg.image))
-    save_image(
-        client,
-        image,
-        settings.minio.temp_path,
-        f"{msg.name}.png",
-        current_user.name,
-    )
+        image_cropped = image.crop((155, 65, 360, 270))
+        save_image(
+            client,
+            image_cropped,
+            settings.minio.temp_path,
+            f"{msg.name}-cropped.png",
+            current_user.name,
+        )
 
-    image_cropped = image.crop((155, 65, 360, 270))
-    save_image(
-        client,
-        image_cropped,
-        settings.minio.temp_path,
-        f"{msg.name}-cropped.png",
-        current_user.name,
-    )
+        image_greyscale = image.convert("L")
+        save_image(
+            client,
+            image_greyscale,
+            settings.minio.temp_path,
+            f"{msg.name}-BW.png",
+            current_user.name,
+        )
 
-    image_greyscale = image.convert("L")
-    save_image(
-        client,
-        image_greyscale,
-        settings.minio.temp_path,
-        f"{msg.name}-BW.png",
-        current_user.name,
-    )
-
-    if reply:
-        res = ImageResponse()
+        res = ImageModifiedResponse()
 
         res.name = msg.name
         res.image_cropped_URL = client.get_presigned_url(
@@ -89,9 +87,23 @@ async def file_request(
         )
 
         await reply(res.SerializeToString())
-        logger.debug("Response sent")
+        logger.debug("Response for image modified sent")
+
     else:
-        logger.warning("Unable to reply")
+        found = client.bucket_exists(current_user.name)
+        if not found:
+            client.make_bucket(current_user.name)
+        else:
+            logger.debug(f"Bucket {current_user.name} already exists")
+
+        URL = client.presigned_put_object(
+            current_user.name, f"{msg.name}.png", expires=timedelta(hours=2)
+        )
+
+        response = ImageResponse()
+        response.URL = URL
+        await reply(response.SerializeToString())
+        logger.debug("Response for initial thingy sent")
 
 
 server = Server()
