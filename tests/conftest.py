@@ -7,8 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.ddl import DropSchema, CreateSchema
 from starlette.testclient import TestClient
 
-from minio import Minio
-
 from kova.authentication import app_maker, get_nsc_client, TestNscClient
 from kova.db import Base
 from kova.db import get_session
@@ -112,15 +110,3 @@ def app(
 @pytest.fixture
 def client(app):
     return TestClient(app=app)
-
-
-@pytest.fixture
-def minio(settings):
-    client = Minio(
-        settings.minio.endpoint,
-        access_key=settings.minio.access_key,
-        secret_key=settings.minio.secret_key,
-        secure=settings.minio.secure,
-    )
-    minio_conf = {"client": client, "bucket": "minio-test"}
-    return minio_conf
