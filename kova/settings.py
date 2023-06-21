@@ -1,4 +1,6 @@
+import tempfile
 from functools import lru_cache
+from pathlib import Path
 from pprint import pprint
 from typing import Any
 
@@ -12,6 +14,11 @@ from pydantic import (
 )
 
 ENV_FILE = ".env"
+
+
+def _get_default_temp_directory():
+    tmp = Path(tempfile.gettempdir())
+    return tmp.as_posix()
 
 
 class Database(BaseSettings):
@@ -76,6 +83,7 @@ class Minio(BaseSettings):
     access_key: str = "minio"
     secret_key: str = "minio123"
     secure: bool = False
+    temp_path: str = Field(default_factory=_get_default_temp_directory)
 
 
 class Redis(BaseSettings):
