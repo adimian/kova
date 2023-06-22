@@ -11,11 +11,16 @@ from kova.current_user import CurrentUser
 from kova.settings import get_settings
 
 from minio import Minio
+from minio.error import S3Error
 from loguru import logger
 from PIL import Image
 from pathlib import Path
 
 import io
+
+
+class MinioException(Exception):
+    pass
 
 
 router = Router()
@@ -47,9 +52,12 @@ async def file_request(
     )
 
     if msg.confirmation:
-        response = client.get_object(current_user.name, f"{msg.name}.png")
+        try:
+            response = client.get_object(current_user.name, f"{msg.name}.png")
+        except S3Error as exception:
+            raise MinioException(exception)
 
-        image = Image.open(io.BytesIO(response))
+        image = Image.open(io.BytesIO(response.data))
 
         image_cropped = image.crop((155, 65, 360, 270))
         save_image(

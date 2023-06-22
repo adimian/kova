@@ -53,7 +53,6 @@ async def run():
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
-    parser.add_argument("--send", default=False, action="store_true")
     args, unknown = parser.parse_known_args()
 
     data = args.data
@@ -86,46 +85,43 @@ async def run():
     path, file = os.path.split(data)
     name, ext = file.split(".")
 
+    # Ask to upload an image
     req = ImageRequest()
     req.name = name
+    req.confirmation = False
+    payload = req.SerializeToString()
 
-    if args.send:
-        req = ImageRequest()
-        req.name = name
+    response = await nc.request(args.subject, payload, timeout=10)
+    print(f"Requested on [{args.subject}] : '{name}'")
 
-        req.confirmation = False
-        payload = req.SerializeToString()
+    res = ImageResponse.FromString(response.data)
+    print(f"Got response: \n" f"Send image at {res.URL}")
 
-        response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested on [{args.subject}] : '{name}'")
+    # Upload image with pressigned URL
+    with open(data, mode="rb") as f:
+        byte_im = f.read()
 
-        res = ImageResponse.FromString(response.data)
-        print(f"Got response: \n" f"Send image at {res.URL}")
+    headers = {"Content-Type": "application/octet-stream"}
 
-        with open(data, mode="rb") as f:
-            byte_im = f.read()
+    res = requests.post(res.URL, data=byte_im, headers=headers)
+    print(res.text)
 
-        res = requests.post(res.URL, data=byte_im, verify=False)
-        if res.status_code == 200:
-            print("yes")
-        else:
-            print(res.text)
+    # Confirmation send
+    req = ImageRequest()
+    req.name = name
+    req.confirmation = True
+    payload = req.SerializeToString()
 
-        req = ImageRequest()
-        req.name = name
+    response = await nc.request(args.subject, payload, timeout=10)
+    print(f"Requested on [{args.subject}] : '{name}'")
 
-        req.confirmation = False
-        payload = req.SerializeToString()
-
-        response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested on [{args.subject}] : '{name}'")
-
-        res = ImageModifiedResponse.FromString(response.data)
-        print(
-            f"Got response: \n"
-            f"Image cropped available at {res.image_cropped_URL} \n"
-            f"Image black and white available at {res.image_BW_URL}"
-        )
+    # Modified images
+    res = ImageModifiedResponse.FromString(response.data)
+    print(
+        f"Got response: \n"
+        f"Image cropped available at {res.image_cropped_URL} \n"
+        f"Image black and white available at {res.image_BW_URL}"
+    )
     await nc.flush()
     await nc.drain()
 
