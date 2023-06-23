@@ -54,48 +54,49 @@ async def file_request(
     if msg.confirmation:
         try:
             response = client.get_object(current_user.name, f"{msg.name}.png")
+
+            image = Image.open(io.BytesIO(response.data))
+
+            image_cropped = image.crop((155, 65, 360, 270))
+            save_image(
+                client,
+                image_cropped,
+                settings.minio.temp_path,
+                f"{msg.name}-cropped.png",
+                current_user.name,
+            )
+
+            image_greyscale = image.convert("L")
+            save_image(
+                client,
+                image_greyscale,
+                settings.minio.temp_path,
+                f"{msg.name}-BW.png",
+                current_user.name,
+            )
+
+            res = ImageModifiedResponse()
+
+            res.name = msg.name
+            res.image_cropped_URL = client.get_presigned_url(
+                "GET",
+                current_user.name,
+                f"{msg.name}-cropped.png",
+                expires=timedelta(hours=2),
+            )
+
+            res.image_BW_URL = client.get_presigned_url(
+                "GET",
+                current_user.name,
+                f"{msg.name}-BW.png",
+                expires=timedelta(hours=2),
+            )
+
+            await reply(res.SerializeToString())
+            logger.debug("Response modified images sent")
+
         except S3Error as exception:
             raise MinioException(exception)
-
-        image = Image.open(io.BytesIO(response.data))
-
-        image_cropped = image.crop((155, 65, 360, 270))
-        save_image(
-            client,
-            image_cropped,
-            settings.minio.temp_path,
-            f"{msg.name}-cropped.png",
-            current_user.name,
-        )
-
-        image_greyscale = image.convert("L")
-        save_image(
-            client,
-            image_greyscale,
-            settings.minio.temp_path,
-            f"{msg.name}-BW.png",
-            current_user.name,
-        )
-
-        res = ImageModifiedResponse()
-
-        res.name = msg.name
-        res.image_cropped_URL = client.get_presigned_url(
-            "GET",
-            current_user.name,
-            f"{msg.name}-cropped.png",
-            expires=timedelta(hours=2),
-        )
-
-        res.image_BW_URL = client.get_presigned_url(
-            "GET",
-            current_user.name,
-            f"{msg.name}-bw.png",
-            expires=timedelta(hours=2),
-        )
-
-        await reply(res.SerializeToString())
-        logger.debug("Response for image modified sent")
 
     else:
         found = client.bucket_exists(current_user.name)
@@ -111,7 +112,7 @@ async def file_request(
         response = ImageResponse()
         response.URL = URL
         await reply(response.SerializeToString())
-        logger.debug("Response for initial thingy sent")
+        logger.debug("Response presigned URL sent")
 
 
 server = Server()

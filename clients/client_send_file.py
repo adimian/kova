@@ -29,7 +29,7 @@ from kova.protocol.image_pb2 import (
 def show_usage():
     usage = """
 python clients/client_send_file.py -s <server> --creds <credentials>
---destination <client> --data <image> --request <subject>
+--destination <client> --data <image> <subject>
 
 
 Example:
@@ -92,36 +92,37 @@ async def run():
     payload = req.SerializeToString()
 
     response = await nc.request(args.subject, payload, timeout=10)
-    print(f"Requested on [{args.subject}] : '{name}'")
+    print(f"Requested on [{args.subject}] : '{file}'")
 
     res = ImageResponse.FromString(response.data)
-    print(f"Got response: \n" f"Send image at {res.URL}")
+    print("Got response with presigned URL")
 
-    # Upload image with pressigned URL
+    # Upload image with presigned URL
     with open(data, mode="rb") as f:
         byte_im = f.read()
 
-    headers = {"Content-Type": "application/octet-stream"}
+    res = requests.put(res.URL, data=byte_im)
 
-    res = requests.post(res.URL, data=byte_im, headers=headers)
-    print(res.text)
+    if res.status_code == 200:
+        # Confirmation send
+        req = ImageRequest()
+        req.name = name
+        req.confirmation = True
+        payload = req.SerializeToString()
 
-    # Confirmation send
-    req = ImageRequest()
-    req.name = name
-    req.confirmation = True
-    payload = req.SerializeToString()
+        response = await nc.request(args.subject, payload, timeout=10)
+        print(f"Requested on [{args.subject}] : '{name}'")
 
-    response = await nc.request(args.subject, payload, timeout=10)
-    print(f"Requested on [{args.subject}] : '{name}'")
+        # Modified images
+        res = ImageModifiedResponse.FromString(response.data)
+        print(
+            f"Got response: \n"
+            f"Image cropped available at {res.image_cropped_URL} \n"
+            f"Image black and white available at {res.image_BW_URL}"
+        )
+    else:
+        print(res.text)
 
-    # Modified images
-    res = ImageModifiedResponse.FromString(response.data)
-    print(
-        f"Got response: \n"
-        f"Image cropped available at {res.image_cropped_URL} \n"
-        f"Image black and white available at {res.image_BW_URL}"
-    )
     await nc.flush()
     await nc.drain()
 
