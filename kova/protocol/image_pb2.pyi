@@ -1,17 +1,23 @@
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Optional as _Optional
+from typing import ClassVar as _ClassVar, Optional as _Optional, List
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ImageRequest(_message.Message):
-    __slots__ = ["name", "confirmation"]
+    __slots__ = ["name"]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    CONFIRMATION_FIELD_NUMBER: _ClassVar[int]
     name: str
-    confirmation: bool
+    def __init__(self, name: _Optional[str] = ...) -> None: ...
+
+class ImageConfirmation(_message.Message):
+    __slots__ = ["name"]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    name: str
+
     def __init__(
-        self, name: _Optional[str] = ..., confirmation: _Optional[bool] = ...
+        self,
+        name: _Optional[str] = ...,
     ) -> None: ...
 
 class ImageResponse(_message.Message):
@@ -24,18 +30,28 @@ class ImageResponse(_message.Message):
         URL: _Optional[str] = ...,
     ) -> None: ...
 
-class ImageModifiedResponse(_message.Message):
-    __slots__ = ["name", "image_cropped_URL", "image_BW_URL"]
+class Transformation(_message.Message):
+    __slots__ = ["name", "URL"]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    IMAGE_CROPPED_URL_FIELD_NUMBER: _ClassVar[int]
-    IMAGE_BW_URL_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
     name: str
-    image_cropped_URL: str
-    image_BW_URL: str
+    URL: str
 
     def __init__(
         self,
         name: _Optional[str] = ...,
-        image_cropped_URL: _Optional[str] = ...,
-        image_BW_URL: _Optional[str] = ...,
+        URL: _Optional[str] = ...,
+    ) -> None: ...
+
+class ModifiedImageResponse(_message.Message):
+    __slots__ = ["name", "transformation"]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    TRANSFORMATION_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    transformation: List
+
+    def __init__(
+        self,
+        name: _Optional[str] = ...,
+        transformation: _Optional[List] = ...,
     ) -> None: ...

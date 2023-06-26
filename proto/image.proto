@@ -4,15 +4,22 @@ package echo;
 
 message ImageRequest {
   string name = 1;
-  bool confirmation = 2;
+}
+
+message ImageConfirmation {
+  string name = 1;
 }
 
 message ImageResponse {
   string URL = 1;
 }
 
-message ImageModifiedResponse {
+message Transformation {
   string name = 1;
-  string image_cropped_URL = 2;
-  string image_BW_URL = 3;
+  string URL = 2;
+}
+
+message ModifiedImageResponse {
+  string name = 1;
+  repeated Transformation transformation = 2;
 }

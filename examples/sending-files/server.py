@@ -3,7 +3,9 @@ from datetime import timedelta
 from kova.protocol.image_pb2 import (
     ImageRequest,
     ImageResponse,
-    ImageModifiedResponse,
+    ModifiedImageResponse,
+    ImageConfirmation,
+    Transformation,
 )
 from kova.server import Server, Router
 from kova.message import Reply
@@ -24,6 +26,7 @@ class MinioException(Exception):
 
 
 router = Router()
+router_transform = Router()
 
 
 def image_to_bytes(img: Image):
@@ -51,70 +54,92 @@ async def file_request(
         secure=settings.minio.secure,
     )
 
-    if msg.confirmation:
-        try:
-            response = client.get_object(current_user.name, f"{msg.name}.png")
-
-            image = Image.open(io.BytesIO(response.data))
-
-            image_cropped = image.crop((155, 65, 360, 270))
-            save_image(
-                client,
-                image_cropped,
-                settings.minio.temp_path,
-                f"{msg.name}-cropped.png",
-                current_user.name,
-            )
-
-            image_greyscale = image.convert("L")
-            save_image(
-                client,
-                image_greyscale,
-                settings.minio.temp_path,
-                f"{msg.name}-BW.png",
-                current_user.name,
-            )
-
-            res = ImageModifiedResponse()
-
-            res.name = msg.name
-            res.image_cropped_URL = client.get_presigned_url(
-                "GET",
-                current_user.name,
-                f"{msg.name}-cropped.png",
-                expires=timedelta(hours=2),
-            )
-
-            res.image_BW_URL = client.get_presigned_url(
-                "GET",
-                current_user.name,
-                f"{msg.name}-BW.png",
-                expires=timedelta(hours=2),
-            )
-
-            await reply(res.SerializeToString())
-            logger.debug("Response modified images sent")
-
-        except S3Error as exception:
-            raise MinioException(exception)
-
+    found = client.bucket_exists(current_user.name)
+    if not found:
+        client.make_bucket(current_user.name)
     else:
-        found = client.bucket_exists(current_user.name)
-        if not found:
-            client.make_bucket(current_user.name)
-        else:
-            logger.debug(f"Bucket {current_user.name} already exists")
+        logger.debug(f"Bucket {current_user.name} already exists")
 
-        URL = client.presigned_put_object(
-            current_user.name, f"{msg.name}.png", expires=timedelta(hours=2)
+    URL = client.presigned_put_object(
+        current_user.name, f"{msg.name}.png", expires=timedelta(hours=2)
+    )
+
+    response = ImageResponse()
+    response.URL = URL
+    await reply(response.SerializeToString())
+    logger.debug("Response presigned URL sent")
+
+
+@router_transform.subscribe("*.transform_file")
+async def file_transform(
+    msg: ImageConfirmation, current_user: CurrentUser, reply: Reply
+):
+    settings = get_settings()
+
+    client = Minio(
+        settings.minio.endpoint,
+        access_key=settings.minio.access_key,
+        secret_key=settings.minio.secret_key,
+        secure=settings.minio.secure,
+    )
+
+    try:
+        response = client.get_object(current_user.name, f"{msg.name}.png")
+
+        image = Image.open(io.BytesIO(response.data))
+
+        image_cropped = image.crop((155, 65, 360, 270))
+        save_image(
+            client,
+            image_cropped,
+            settings.minio.temp_path,
+            f"{msg.name}-cropped.png",
+            current_user.name,
         )
 
-        response = ImageResponse()
-        response.URL = URL
-        await reply(response.SerializeToString())
-        logger.debug("Response presigned URL sent")
+        image_greyscale = image.convert("L")
+        save_image(
+            client,
+            image_greyscale,
+            settings.minio.temp_path,
+            f"{msg.name}-BW.png",
+            current_user.name,
+        )
+
+        res = ModifiedImageResponse()
+
+        transformation_crop = Transformation()
+        transformation_crop.name = "image_cropped"
+        transformation_crop.URL = client.get_presigned_url(
+            "GET",
+            current_user.name,
+            f"{msg.name}-cropped.png",
+            expires=timedelta(hours=2),
+        )
+
+        res.transformation.append(transformation_crop)
+
+        transformation_bw = Transformation()
+        transformation_bw.name = "image_greyscale"
+        transformation_bw.URL = client.get_presigned_url(
+            "GET",
+            current_user.name,
+            f"{msg.name}-BW.png",
+            expires=timedelta(hours=2),
+        )
+
+        res.transformation.append(transformation_bw)
+
+        res.name = msg.name
+
+        await reply(res.SerializeToString())
+        logger.debug("Response modified images sent")
+
+    except S3Error as exception:
+        raise MinioException(exception)
 
 
 server = Server()
 server.add_router(router=router)
+server.add_router(router=router_transform)
 server.run()

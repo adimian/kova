@@ -22,7 +22,8 @@ import nats
 from kova.protocol.image_pb2 import (
     ImageRequest,
     ImageResponse,
-    ImageModifiedResponse,
+    ModifiedImageResponse,
+    ImageConfirmation,
 )
 
 
@@ -50,6 +51,7 @@ async def run():
 
     parser.add_argument("subject", default="hello", nargs="?")
     parser.add_argument("-d", "--data", default="./lenna.png")
+    parser.add_argument("--transformation", default="*.transform_file")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
@@ -88,7 +90,6 @@ async def run():
     # Ask to upload an image
     req = ImageRequest()
     req.name = name
-    req.confirmation = False
     payload = req.SerializeToString()
 
     response = await nc.request(args.subject, payload, timeout=10)
@@ -103,23 +104,20 @@ async def run():
 
     res = requests.put(res.URL, data=byte_im)
 
-    if res.status_code == 200:
+    if res.status_code == 200 and args.transformation:
         # Confirmation send
-        req = ImageRequest()
+        req = ImageConfirmation()
         req.name = name
-        req.confirmation = True
         payload = req.SerializeToString()
 
-        response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested on [{args.subject}] : '{name}'")
+        response = await nc.request(args.transformation, payload, timeout=10)
+        print(f"Requested on [{args.transformation}] : '{name}'")
 
         # Modified images
-        res = ImageModifiedResponse.FromString(response.data)
-        print(
-            f"Got response: \n"
-            f"Image cropped available at {res.image_cropped_URL} \n"
-            f"Image black and white available at {res.image_BW_URL}"
-        )
+        res = ModifiedImageResponse.FromString(response.data)
+        print("Got response: \n")
+        for transformation in res.transformation:
+            print(f"{transformation.name} available at {transformation.URL}\n")
     else:
         print(res.text)
 
