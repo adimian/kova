@@ -49,9 +49,9 @@ def show_usage_and_die():
 async def run():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("subject", default="hello", nargs="?")
+    parser.add_argument("subject", default="", nargs="?")
     parser.add_argument("-d", "--data", default="./lenna.png")
-    parser.add_argument("--transformation", default="*.transform_file")
+    parser.add_argument("--transformation", default="")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
@@ -87,24 +87,29 @@ async def run():
     path, file = os.path.split(data)
     name, ext = file.split(".")
 
-    # Ask to upload an image
-    req = ImageRequest()
-    req.name = name
-    payload = req.SerializeToString()
+    if args.subject != "":
+        # Ask to upload an image
+        req = ImageRequest()
+        req.name = name
+        payload = req.SerializeToString()
 
-    response = await nc.request(args.subject, payload, timeout=10)
-    print(f"Requested on [{args.subject}] : '{file}'")
+        response = await nc.request(args.subject, payload, timeout=10)
+        print(f"Requested on [{args.subject}] : '{file}'")
 
-    res = ImageResponse.FromString(response.data)
-    print("Got response with presigned URL")
+        res = ImageResponse.FromString(response.data)
+        print("Got response with presigned URL")
 
-    # Upload image with presigned URL
-    with open(data, mode="rb") as f:
-        byte_im = f.read()
+        # Upload image with presigned URL
+        with open(data, mode="rb") as f:
+            byte_im = f.read()
 
-    res = requests.put(res.URL, data=byte_im)
+        res = requests.put(res.URL, data=byte_im)
+        if res.status_code == 200:
+            print("Image sent")
+        else:
+            print(res.text)
 
-    if res.status_code == 200 and args.transformation:
+    if args.transformation != "":
         # Confirmation send
         req = ImageConfirmation()
         req.name = name
@@ -118,8 +123,6 @@ async def run():
         print("Got response: \n")
         for transformation in res.transformation:
             print(f"{transformation.name} available at {transformation.URL}\n")
-    else:
-        print(res.text)
 
     await nc.flush()
     await nc.drain()

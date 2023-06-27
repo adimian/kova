@@ -110,8 +110,7 @@ async def file_transform(
 
         transformation_crop = Transformation()
         transformation_crop.name = "image_cropped"
-        transformation_crop.URL = client.get_presigned_url(
-            "GET",
+        transformation_crop.URL = client.presigned_get_object(
             current_user.name,
             f"{msg.name}-cropped.png",
             expires=timedelta(hours=2),
@@ -121,8 +120,7 @@ async def file_transform(
 
         transformation_bw = Transformation()
         transformation_bw.name = "image_greyscale"
-        transformation_bw.URL = client.get_presigned_url(
-            "GET",
+        transformation_bw.URL = client.presigned_get_object(
             current_user.name,
             f"{msg.name}-BW.png",
             expires=timedelta(hours=2),
