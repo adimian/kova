@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import requests
 import argparse
 import asyncio
 import sys
@@ -19,12 +18,12 @@ import os
 
 import nats
 
-from kova.protocol.image_pb2 import (
-    ImageRequest,
-    ImageResponse,
-    ModifiedImageResponse,
-    ImageConfirmation,
-)
+from kova.send_file import color_image, crop_image, connect, Modes
+
+from PIL import Image
+from pathlib import Path
+
+import io
 
 
 def show_usage():
@@ -51,7 +50,7 @@ async def run():
 
     parser.add_argument("subject", default="", nargs="?")
     parser.add_argument("-d", "--data", default="./lenna.png")
-    parser.add_argument("--transformation", default="")
+    parser.add_argument("--user", default="test")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
@@ -87,42 +86,19 @@ async def run():
     path, file = os.path.split(data)
     name, ext = file.split(".")
 
-    if args.subject != "":
-        # Ask to upload an image
-        req = ImageRequest()
-        req.name = name
-        payload = req.SerializeToString()
+    color = Modes.BW
 
-        response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested on [{args.subject}] : '{file}'")
+    crop = [155, 65, 360, 270]
 
-        res = ImageResponse.FromString(response.data)
-        print("Got response with presigned URL")
+    await connect(nc, data, args.user)
+    image_crop = await crop_image(nc, name, args.user, crop)
+    image_color = await color_image(nc, name, args.user, color)
 
-        # Upload image with presigned URL
-        with open(data, mode="rb") as f:
-            byte_im = f.read()
+    image_save = Image.open(io.BytesIO(image_color))
+    image_save.save(Path(path) / f"{name}-color.png", "png", quality="keep")
 
-        res = requests.put(res.URL, data=byte_im)
-        if res.status_code == 200:
-            print("Image sent")
-        else:
-            print(res.text)
-
-    if args.transformation != "":
-        # Confirmation send
-        req = ImageConfirmation()
-        req.name = name
-        payload = req.SerializeToString()
-
-        response = await nc.request(args.transformation, payload, timeout=10)
-        print(f"Requested on [{args.transformation}] : '{name}'")
-
-        # Modified images
-        res = ModifiedImageResponse.FromString(response.data)
-        print("Got response: \n")
-        for transformation in res.transformation:
-            print(f"{transformation.name} available at {transformation.URL}\n")
+    image_save_2 = Image.open(io.BytesIO(image_crop))
+    image_save_2.save(Path(path) / f"{name}-crop.png", "png", quality="keep")
 
     await nc.flush()
     await nc.drain()

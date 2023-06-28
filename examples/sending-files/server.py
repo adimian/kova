@@ -3,9 +3,7 @@ from datetime import timedelta
 from kova.protocol.image_pb2 import (
     ImageRequest,
     ImageResponse,
-    ModifiedImageResponse,
     ImageConfirmation,
-    Transformation,
 )
 from kova.server import Server, Router
 from kova.message import Reply
@@ -88,47 +86,31 @@ async def file_transform(
 
         image = Image.open(io.BytesIO(response.data))
 
-        image_cropped = image.crop((155, 65, 360, 270))
+        image_modified = None
+
+        if msg.transformation == "crop":
+            image_modified = image.crop(
+                (msg.crop.left, msg.crop.top, msg.crop.right, msg.crop.bottom)
+            )
+
+        if msg.transformation == "color":
+            image_modified = image.convert(msg.mode)
+
         save_image(
             client,
-            image_cropped,
+            image_modified,
             settings.minio.temp_path,
-            f"{msg.name}-cropped.png",
+            f"{msg.name}-{msg.transformation}.png",
             current_user.name,
         )
 
-        image_greyscale = image.convert("L")
-        save_image(
-            client,
-            image_greyscale,
-            settings.minio.temp_path,
-            f"{msg.name}-BW.png",
-            current_user.name,
-        )
+        res = ImageResponse()
 
-        res = ModifiedImageResponse()
-
-        transformation_crop = Transformation()
-        transformation_crop.name = "image_cropped"
-        transformation_crop.URL = client.presigned_get_object(
+        res.URL = client.presigned_get_object(
             current_user.name,
-            f"{msg.name}-cropped.png",
+            f"{msg.name}-{msg.transformation}.png",
             expires=timedelta(hours=2),
         )
-
-        res.transformation.append(transformation_crop)
-
-        transformation_bw = Transformation()
-        transformation_bw.name = "image_greyscale"
-        transformation_bw.URL = client.presigned_get_object(
-            current_user.name,
-            f"{msg.name}-BW.png",
-            expires=timedelta(hours=2),
-        )
-
-        res.transformation.append(transformation_bw)
-
-        res.name = msg.name
 
         await reply(res.SerializeToString())
         logger.debug("Response modified images sent")
