@@ -18,12 +18,7 @@ import os
 
 import nats
 
-from kova.send_file import color_image, crop_image, connect, Modes
-
-from PIL import Image
-from pathlib import Path
-
-import io
+from kova.send_file import color_image, crop_image, connect, Modes, save_image
 
 
 def show_usage():
@@ -86,7 +81,7 @@ async def run():
     path, file = os.path.split(data)
     name, ext = file.split(".")
 
-    color = Modes.BW
+    color = Modes.RED
 
     crop = [155, 65, 360, 270]
 
@@ -94,11 +89,8 @@ async def run():
     image_crop = await crop_image(nc, name, args.user, crop)
     image_color = await color_image(nc, name, args.user, color)
 
-    image_save = Image.open(io.BytesIO(image_color))
-    image_save.save(Path(path) / f"{name}-color.png", "png", quality="keep")
-
-    image_save_2 = Image.open(io.BytesIO(image_crop))
-    image_save_2.save(Path(path) / f"{name}-crop.png", "png", quality="keep")
+    save_image(image_crop, path, name)
+    save_image(image_color, path, name)
 
     await nc.flush()
     await nc.drain()

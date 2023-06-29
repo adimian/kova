@@ -94,7 +94,23 @@ async def file_transform(
             )
 
         if msg.transformation == "color":
-            image_modified = image.convert(msg.mode)
+            red, green, blue = image.split()
+            zeroed_band = red.point(lambda _: 0)
+
+            if msg.mode == "BW":
+                image_modified = image.convert("L")
+            if msg.mode == "RED":
+                image_modified = Image.merge(
+                    "RGB", (red, zeroed_band, zeroed_band)
+                )
+            if msg.mode == "GREEN":
+                image_modified = Image.merge(
+                    "RGB", (zeroed_band, green, zeroed_band)
+                )
+            if msg.mode == "BLUE":
+                image_modified = Image.merge(
+                    "RGB", (zeroed_band, zeroed_band, blue)
+                )
 
         save_image(
             client,
