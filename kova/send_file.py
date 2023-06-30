@@ -101,5 +101,5 @@ async def color_image(nc, name: str, user_name: str, mode: Modes):
 
 def save_image(image, path, name):
     image_save = Image.open(io.BytesIO(image))
-    image_save.save(Path(path) / f"{name}-color.png", "png", quality="keep")
+    image_save.save(Path(path) / f"{name}.png", "png", quality="keep")
     image_save.show()

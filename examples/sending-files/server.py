@@ -24,7 +24,6 @@ class MinioException(Exception):
 
 
 router = Router()
-router_transform = Router()
 
 
 def image_to_bytes(img: Image):
@@ -68,7 +67,7 @@ async def file_request(
     logger.debug("Response presigned URL sent")
 
 
-@router_transform.subscribe("*.transform_file")
+@router.subscribe("*.transform_file")
 async def file_transform(
     msg: ImageConfirmation, current_user: CurrentUser, reply: Reply
 ):
@@ -137,5 +136,4 @@ async def file_transform(
 
 server = Server()
 server.add_router(router=router)
-server.add_router(router=router_transform)
 server.run()

@@ -83,14 +83,14 @@ async def run():
 
     color = Modes.RED
 
-    crop = [155, 65, 360, 270]
+    crop = [230, 160, 440, 260]
 
     await connect(nc, data, args.user)
     image_crop = await crop_image(nc, name, args.user, crop)
     image_color = await color_image(nc, name, args.user, color)
 
-    save_image(image_crop, path, name)
-    save_image(image_color, path, name)
+    save_image(image_crop, path, f"{name}-crop")
+    save_image(image_color, path, f"{name}-color")
 
     await nc.flush()
     await nc.drain()
