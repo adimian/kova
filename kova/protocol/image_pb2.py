@@ -22,10 +22,99 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="echo",
     syntax="proto3",
     serialized_pb=_b(
-        '\n\x0bimage.proto\x12\x04\x65\x63ho"+\n\x0cImageRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05image\x18\x02 \x01(\x0c"N\n\rImageResponse\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11image_cropped_URL\x18\x02 \x01(\t\x12\x14\n\x0cimage_BW_URL\x18\x03 \x01(\tb\x06proto3'
+        '\n\x0bimage.proto\x12\x04\x65\x63ho"@\n\x04\x43rop\x12\x0c\n\x04left\x18\x01 \x01(\x05\x12\x0b\n\x03top\x18\x02 \x01(\x05\x12\r\n\x05right\x18\x03 \x01(\x05\x12\x0e\n\x06\x62ottom\x18\x04 \x01(\x05"\x1c\n\x0cImageRequest\x12\x0c\n\x04name\x18\x01 \x01(\t"a\n\x11ImageConfirmation\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0etransformation\x18\x02 \x01(\t\x12\x18\n\x04\x63rop\x18\x03 \x01(\x0b\x32\n.echo.Crop\x12\x0c\n\x04mode\x18\x04 \x01(\t"\x1c\n\rImageResponse\x12\x0b\n\x03URL\x18\x01 \x01(\tb\x06proto3'
     ),
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+
+_CROP = _descriptor.Descriptor(
+    name="Crop",
+    full_name="echo.Crop",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="left",
+            full_name="echo.Crop.left",
+            index=0,
+            number=1,
+            type=5,
+            cpp_type=1,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+        _descriptor.FieldDescriptor(
+            name="top",
+            full_name="echo.Crop.top",
+            index=1,
+            number=2,
+            type=5,
+            cpp_type=1,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+        _descriptor.FieldDescriptor(
+            name="right",
+            full_name="echo.Crop.right",
+            index=2,
+            number=3,
+            type=5,
+            cpp_type=1,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+        _descriptor.FieldDescriptor(
+            name="bottom",
+            full_name="echo.Crop.bottom",
+            index=3,
+            number=4,
+            type=5,
+            cpp_type=1,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=21,
+    serialized_end=85,
+)
 
 
 _IMAGEREQUEST = _descriptor.Descriptor(
@@ -52,23 +141,6 @@ _IMAGEREQUEST = _descriptor.Descriptor(
             extension_scope=None,
             options=None,
         ),
-        _descriptor.FieldDescriptor(
-            name="image",
-            full_name="echo.ImageRequest.image",
-            index=1,
-            number=2,
-            type=12,
-            cpp_type=9,
-            label=1,
-            has_default_value=False,
-            default_value=_b(""),
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            options=None,
-        ),
     ],
     extensions=[],
     nested_types=[],
@@ -78,21 +150,21 @@ _IMAGEREQUEST = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=21,
-    serialized_end=64,
+    serialized_start=87,
+    serialized_end=115,
 )
 
 
-_IMAGERESPONSE = _descriptor.Descriptor(
-    name="ImageResponse",
-    full_name="echo.ImageResponse",
+_IMAGECONFIRMATION = _descriptor.Descriptor(
+    name="ImageConfirmation",
+    full_name="echo.ImageConfirmation",
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
             name="name",
-            full_name="echo.ImageResponse.name",
+            full_name="echo.ImageConfirmation.name",
             index=0,
             number=1,
             type=9,
@@ -108,8 +180,8 @@ _IMAGERESPONSE = _descriptor.Descriptor(
             options=None,
         ),
         _descriptor.FieldDescriptor(
-            name="image_cropped_URL",
-            full_name="echo.ImageResponse.image_cropped_URL",
+            name="transformation",
+            full_name="echo.ImageConfirmation.transformation",
             index=1,
             number=2,
             type=9,
@@ -125,10 +197,27 @@ _IMAGERESPONSE = _descriptor.Descriptor(
             options=None,
         ),
         _descriptor.FieldDescriptor(
-            name="image_BW_URL",
-            full_name="echo.ImageResponse.image_BW_URL",
+            name="crop",
+            full_name="echo.ImageConfirmation.crop",
             index=2,
             number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+        _descriptor.FieldDescriptor(
+            name="mode",
+            full_name="echo.ImageConfirmation.mode",
+            index=3,
+            number=4,
             type=9,
             cpp_type=9,
             label=1,
@@ -150,12 +239,64 @@ _IMAGERESPONSE = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=66,
-    serialized_end=144,
+    serialized_start=117,
+    serialized_end=214,
 )
 
+
+_IMAGERESPONSE = _descriptor.Descriptor(
+    name="ImageResponse",
+    full_name="echo.ImageResponse",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="URL",
+            full_name="echo.ImageResponse.URL",
+            index=0,
+            number=1,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b("").decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            options=None,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=216,
+    serialized_end=244,
+)
+
+_IMAGECONFIRMATION.fields_by_name["crop"].message_type = _CROP
+DESCRIPTOR.message_types_by_name["Crop"] = _CROP
 DESCRIPTOR.message_types_by_name["ImageRequest"] = _IMAGEREQUEST
+DESCRIPTOR.message_types_by_name["ImageConfirmation"] = _IMAGECONFIRMATION
 DESCRIPTOR.message_types_by_name["ImageResponse"] = _IMAGERESPONSE
+
+Crop = _reflection.GeneratedProtocolMessageType(
+    "Crop",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_CROP,
+        __module__="image_pb2"
+        # @@protoc_insertion_point(class_scope:echo.Crop)
+    ),
+)
+_sym_db.RegisterMessage(Crop)
 
 ImageRequest = _reflection.GeneratedProtocolMessageType(
     "ImageRequest",
@@ -167,6 +308,17 @@ ImageRequest = _reflection.GeneratedProtocolMessageType(
     ),
 )
 _sym_db.RegisterMessage(ImageRequest)
+
+ImageConfirmation = _reflection.GeneratedProtocolMessageType(
+    "ImageConfirmation",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_IMAGECONFIRMATION,
+        __module__="image_pb2"
+        # @@protoc_insertion_point(class_scope:echo.ImageConfirmation)
+    ),
+)
+_sym_db.RegisterMessage(ImageConfirmation)
 
 ImageResponse = _reflection.GeneratedProtocolMessageType(
     "ImageResponse",

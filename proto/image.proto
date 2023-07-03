@@ -2,13 +2,24 @@ syntax = "proto3";
 
 package echo;
 
+message Crop {
+  int32 left = 1;
+  int32 top = 2;
+  int32 right = 3;
+  int32 bottom = 4;
+}
+
 message ImageRequest {
   string name = 1;
-  bytes image = 2;
+}
+
+message ImageConfirmation {
+  string name = 1;
+  string transformation = 2;
+  Crop crop = 3;
+  string mode =4;
 }
 
 message ImageResponse {
-  string name = 1;
-  string image_cropped_URL = 2;
-  string image_BW_URL= 3;
+  string URL = 1;
 }

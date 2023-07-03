@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import argparse
 import asyncio
 import sys
@@ -19,13 +18,13 @@ import os
 
 import nats
 
-from kova.protocol.image_pb2 import ImageRequest, ImageResponse
+from kova.send_file import color_image, crop_image, connect, Modes, save_image
 
 
 def show_usage():
     usage = """
 python clients/client_send_file.py -s <server> --creds <credentials>
---destination <client> --data <image> --request <subject>
+--destination <client> --data <image> <subject>
 
 
 Example:
@@ -44,12 +43,12 @@ def show_usage_and_die():
 async def run():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("subject", default="hello", nargs="?")
+    parser.add_argument("subject", default="", nargs="?")
     parser.add_argument("-d", "--data", default="./lenna.png")
+    parser.add_argument("--user", default="test")
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
-    parser.add_argument("--request", default=False, action="store_true")
     args, unknown = parser.parse_known_args()
 
     data = args.data
@@ -79,30 +78,20 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    with open(data, mode="rb") as f:
-        byte_im = f.read()
-
     path, file = os.path.split(data)
     name, ext = file.split(".")
 
-    req = ImageRequest()
-    req.name = name
-    req.image = byte_im
-    payload = req.SerializeToString()
+    color = Modes.RED
 
-    if args.request:
-        response = await nc.request(args.subject, payload, timeout=10)
-        print(f"Requested on [{args.subject}] : '{name}'")
+    crop = [230, 160, 440, 260]
 
-        res = ImageResponse.FromString(response.data)
-        print(
-            f"Got response: \n"
-            f"Image cropped available at {res.image_cropped_URL} \n"
-            f"Image black and white available at {res.image_BW_URL}"
-        )
-    else:
-        await nc.publish(args.subject, payload)
-        print(f"Published on [{args.subject}] : '{name}'")
+    await connect(nc, data, args.user)
+    image_crop = await crop_image(nc, name, args.user, crop)
+    image_color = await color_image(nc, name, args.user, color)
+
+    save_image(image_crop, path, f"{name}-crop")
+    save_image(image_color, path, f"{name}-color")
+
     await nc.flush()
     await nc.drain()
 
