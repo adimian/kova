@@ -4,6 +4,7 @@ from typing import Type, TypeAlias, Callable, Any
 
 from nats.aio.client import Client as NATSClient
 from nats.aio.msg import Msg as NATSMsg
+from nats.js.client import JetStreamContext as JetStreamClient
 
 from .our_types import Message, Dependable
 from .current_user import CurrentUser
@@ -25,7 +26,7 @@ class InMemoryQueue:
         self._messages[subject].append(payload)
 
 
-Queue: TypeAlias = NATSClient | InMemoryQueue
+Queue: TypeAlias = NATSClient | JetStreamClient | InMemoryQueue
 MessageType: TypeAlias = Type[Message]
 
 

@@ -19,16 +19,18 @@ Dependable.register(Publish)
 
 
 class Reply(Dependable):
-    def __call__(self, payload: bytes):
+    def __call__(self, payload: bytes, subject: str = ""):
         raise NotImplementedError("you should not see this")
 
     @classmethod
     def get_instance(cls, router, msg, **kwargs):
         if msg.reply:
 
-            async def reply(payload: bytes):
+            async def reply(payload: bytes, subject: str = ""):
+                if subject == "":
+                    subject = msg.reply
                 p = Publish().get_instance(router=router)
-                await p(subject=msg.reply, payload=payload)
+                await p(subject=subject, payload=payload)
 
             return reply
         else:

@@ -77,12 +77,14 @@ async def run():
         print(e)
         show_usage_and_die()
 
-    async def cb(msg):
+    async def message_handler(msg):
         res = EchoResponse.FromString(msg.data)
         print(f"Got response: '{res.message}'")
 
-    await js.add_stream(name="test", subjects=[args.subject])
-    await js.subscribe(args.subject, cb=cb)
+    await js.add_stream(
+        name="test", subjects=[args.subject, f"{args.subject}.reply"]
+    )
+    await js.subscribe(f"{args.subject}.reply", cb=message_handler)
 
     req = EchoRequest()
     req.message = data
