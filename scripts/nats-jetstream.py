@@ -46,7 +46,6 @@ async def run():
     parser.add_argument("-s", "--servers", default="nats://localhost:4222")
     parser.add_argument("--creds", default="")
     parser.add_argument("--token", default="")
-    parser.add_argument("--request", default=False, action="store_true")
     args, unknown = parser.parse_known_args()
 
     data = args.data
@@ -81,8 +80,11 @@ async def run():
         res = EchoResponse.FromString(msg.data)
         print(f"Got response: '{res.message}'")
 
+    name = args.subject.split(".")
+    current_user = name[0]
+
     await js.add_stream(
-        name="test", subjects=[args.subject, f"{args.subject}.reply"]
+        name=current_user, subjects=[args.subject, f"{args.subject}.reply"]
     )
     await js.subscribe(f"{args.subject}.reply", cb=message_handler)
 
@@ -93,8 +95,8 @@ async def run():
     await js.publish(args.subject, payload)
     print(f"Published on [{args.subject}] : '{data}'")
 
-    await js.purge_stream("test")
-    await js.delete_stream("test")
+    await js.purge_stream(current_user)
+    await js.delete_stream(current_user)
 
     await nc.flush()
     await nc.drain()
