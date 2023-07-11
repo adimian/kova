@@ -23,11 +23,23 @@ from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
 
 def show_usage():
     usage = """
-nats-pub [-s SERVER] <subject> <data>
+usage: nats-jetstream.py [-h] [-d DATA] [-s SERVERS] [--creds CREDS]
+[--token TOKEN] [subject]
+
+positional arguments:
+  subject               The queue on which the message will be send
+
+options:
+  -h, --help            show this help message and exit
+  -d DATA, --data DATA  The message to send
+  -s SERVERS, --servers SERVERS
+                        The adress of the running NATS server
+  --creds CREDS         User credentials
+  --token TOKEN         User token (if credentials not provided)
 
 Example:
 
-nats-pub -s demo.nats.io greeting 'Hello World'
+nats-jetstream.py -s demo.nats.io test.echo 'Hello World'
 """
     print(usage)
 
@@ -40,12 +52,25 @@ def show_usage_and_die():
 async def run():
     parser = argparse.ArgumentParser()
 
-    # e.g. nats-pub -s demo.nats.io hello "world"
-    parser.add_argument("subject", default="hello", nargs="?")
-    parser.add_argument("-d", "--data", default="hello world")
-    parser.add_argument("-s", "--servers", default="nats://localhost:4222")
-    parser.add_argument("--creds", default="")
-    parser.add_argument("--token", default="")
+    parser.add_argument(
+        "subject",
+        default="hello",
+        nargs="?",
+        help="The queue on which the message will be send",
+    )
+    parser.add_argument(
+        "-d", "--data", default="hello world", help="The message to send"
+    )
+    parser.add_argument(
+        "-s",
+        "--servers",
+        default="nats://localhost:4222",
+        help="The adress of the running NATS server",
+    )
+    parser.add_argument("--creds", default="", help="User credentials")
+    parser.add_argument(
+        "--token", default="", help="User token (if credentials not provided)"
+    )
     args, unknown = parser.parse_known_args()
 
     data = args.data

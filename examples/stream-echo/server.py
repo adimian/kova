@@ -11,7 +11,7 @@ from loguru import logger
 from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
 from kova.server import Server, Router
 from kova.current_user import CurrentUser
-from kova.message import Reply
+from kova.message import ReplyStream
 
 
 router = Router()
@@ -19,7 +19,7 @@ router = Router()
 
 @router.subscribe("*.echo.stream")
 async def identified_request(
-    msg: EchoRequest, current_user: CurrentUser, reply: Reply
+    msg: EchoRequest, current_user: CurrentUser, reply: ReplyStream
 ):
     logger.debug(f"Received message: '{msg.message}'")
     if reply:
