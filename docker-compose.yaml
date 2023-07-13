@@ -5,22 +5,28 @@ services:
     ports:
       - "8222:8222"
       - "4222:4222"
-    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 "
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 -c /etc/nats-config/server.conf"
     networks: [ "nats" ]
+    volumes:
+      - /root/nats-config:/etc/nats-config
   nats-1:
     image: nats
     ports:
       - "5222:4222"
-    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222"
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222 -c /etc/nats-config/server.conf"
     networks: [ "nats" ]
     depends_on: [ "nats" ]
+    volumes:
+      - /root/nats-config:/etc/nats-config
   nats-2:
     image: nats
     ports:
       - "6222:4222"
-    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222"
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222 -c /etc/nats-config/server.conf"
     networks: [ "nats" ]
     depends_on: [ "nats" ]
+    volumes:
+      - /root/nats-config:/etc/nats-config
 
   db:
     image: postgres:11-alpine
