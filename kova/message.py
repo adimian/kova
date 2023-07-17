@@ -43,32 +43,21 @@ Dependable.register(Reply)
 
 
 class ReplyStream(Dependable):
-    def __call__(self, payload: bytes, subject: str):
+    def __call__(self, payload: bytes):
         raise NotImplementedError("you should not see this")
 
     @classmethod
     def get_instance(cls, router, msg, **kwargs):
         if msg.reply:
 
-            async def reply(payload: bytes, subject: str):
-                check = subject.split(".")
-                if check[-1] != "reply":
-                    raise ReplyNameException(
-                        "Reply subject should finish with reply"
-                    )
+            async def reply(payload: bytes):
+                subject = f"{msg.subject}.reply"
                 p = Publish().get_instance(router=router)
                 await p(subject=subject, payload=payload)
 
             return reply
         else:
             return None
-
-    @classmethod
-    def get_reply_subject(cls, stream_name: str, current_user: str):
-        # stream_name = router.queue._subs[1].subject()
-        modified_stream = stream_name.replace("*", current_user)
-        name = f"{modified_stream}.reply"
-        return name
 
 
 Dependable.register(ReplyStream)

@@ -16,10 +16,8 @@ from kova.message import ReplyStream
 
 router = Router()
 
-queue = "*.echo.stream"
 
-
-@router.subscribe(queue)
+@router.subscribe("*.echo.stream")
 async def identified_request(
     msg: EchoRequest, current_user: CurrentUser, reply: ReplyStream
 ):
@@ -29,11 +27,8 @@ async def identified_request(
         res = EchoResponse()
         res.message = f"echo {msg.message} from {current_user.name}"
 
-        reply_subject = ReplyStream.get_reply_subject(queue, current_user.name)
-
         await reply(
             res.SerializeToString(),
-            reply_subject,
         )
         logger.debug("Response sent")
     else:
