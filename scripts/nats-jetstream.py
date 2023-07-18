@@ -19,6 +19,7 @@ import sys
 import nats
 
 from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
+from kova.cache import Cache
 
 
 def show_usage():
@@ -107,6 +108,13 @@ async def run():
 
     name = args.subject.split(".")
     current_user = name[0]
+    c = Cache()
+
+    test = await c.get("greetings")
+    print(test)
+    if test is None:
+        await c.set("greetings", b"hello")
+        print("No object in Cache")
 
     await js.add_stream(
         name=current_user, subjects=[args.subject, f"{args.subject}.reply"]
