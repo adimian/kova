@@ -18,8 +18,8 @@ import sys
 
 import nats
 
+from kova.message_buffer import Buffer
 from kova.protocol.ping_pb2 import EchoRequest, EchoResponse
-from kova.cache import Cache
 
 
 def show_usage():
@@ -108,25 +108,24 @@ async def run():
 
     name = args.subject.split(".")
     current_user = name[0]
-    c = Cache()
-
-    test = await c.get("greetings")
-    print(test)
-    if test is None:
-        await c.set("greetings", b"hello")
-        print("No object in Cache")
+    buffer = Buffer()
 
     await js.add_stream(
         name=current_user, subjects=[args.subject, f"{args.subject}.reply"]
     )
     await js.subscribe(f"{args.subject}.reply", cb=message_handler)
 
-    req = EchoRequest()
-    req.message = data
-    payload = req.SerializeToString()
+    payload = buffer.get()
+    if payload is None:
+        req = EchoRequest()
+        req.message = data
+        payload = req.SerializeToString()
+        buffer.set(payload)
 
     await js.publish(args.subject, payload)
-    print(f"Published on [{args.subject}] : '{data}'")
+    print(f"Published on [{args.subject}] : '{payload.decode()}'")
+
+    buffer.remove()
 
     await js.purge_stream(current_user)
     await js.delete_stream(current_user)
