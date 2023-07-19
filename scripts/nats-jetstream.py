@@ -115,17 +115,17 @@ async def run():
     )
     await js.subscribe(f"{args.subject}.reply", cb=message_handler)
 
-    payload = buffer.get()
+    payload = buffer.get(args.subject)
     if payload is None:
         req = EchoRequest()
         req.message = data
         payload = req.SerializeToString()
-        buffer.set(payload)
+        buffer.save(payload, args.subject)
 
     await js.publish(args.subject, payload)
     print(f"Published on [{args.subject}] : '{payload.decode()}'")
 
-    buffer.remove()
+    buffer.remove(args.subject)
 
     await js.purge_stream(current_user)
     await js.delete_stream(current_user)
