@@ -23,31 +23,33 @@ class Buffer(Dependable):
         with open(Path(self._path) / subject / f"{name}.bin", "wb") as f:
             f.write(message)
         logger.debug("Message saved in buffer")
+        return str(name)
 
     def get(self, subject: str) -> bytes | None:
         subject = subject.replace(".", "_")
+
         if not os.path.exists(Path(self._path) / subject):
             return None
+
         files_list = os.listdir(Path(self._path) / subject)
         if not files_list:
             logger.debug("No messages in buffer")
             return None
         else:
-            logger.debug(files_list[0])
-            with open(Path(self._path) / subject / files_list[0], "rb") as f:
-                message = f.read()
-            os.remove(Path(self._path) / subject / files_list[0])
-            logger.debug("Got message from buffer")
-            return message
+            for file in files_list:
+                if file.endswith(".bin"):
+                    with open(Path(self._path) / subject / file, "rb") as f:
+                        message = f.read()
+                    os.remove(Path(self._path) / subject / file)
+                    logger.debug("Got message from buffer")
+                    return message
+            return None
 
-    def remove(self, subject: str):
+    def remove(self, subject: str, name: str):
         subject = subject.replace(".", "_")
-        files_list = os.listdir(Path(self._path) / subject)
-        if len(files_list) == 1:
-            os.remove(Path(self._path) / subject / files_list[0])
-            logger.debug("Message sent and removed from buffer")
-        else:
-            logger.debug("Problem")
+
+        os.remove(Path(self._path) / subject / f"{name}.bin")
+        logger.debug("Message sent and removed from buffer")
 
 
 Dependable.register(Buffer)

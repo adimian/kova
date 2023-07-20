@@ -50,6 +50,24 @@ def show_usage_and_die():
     sys.exit(1)
 
 
+async def send_message(jetstream, data: str, subject: str):
+    buffer = Buffer()
+    payload = buffer.get(subject)
+    if payload is None:
+        req = EchoRequest()
+        req.message = data
+        payload = req.SerializeToString()
+        name_file = buffer.save(payload, subject)
+
+        await jetstream.publish(subject, payload)
+        print(f"Published on [{subject}] : '{payload.decode()}'")
+
+        buffer.remove(subject, name_file)
+    else:
+        await jetstream.publish(subject, payload)
+        print(f"Published on [{subject}] : '{payload.decode()}'")
+
+
 async def run():
     parser = argparse.ArgumentParser()
 
@@ -108,24 +126,13 @@ async def run():
 
     name = args.subject.split(".")
     current_user = name[0]
-    buffer = Buffer()
 
     await js.add_stream(
         name=current_user, subjects=[args.subject, f"{args.subject}.reply"]
     )
     await js.subscribe(f"{args.subject}.reply", cb=message_handler)
 
-    payload = buffer.get(args.subject)
-    if payload is None:
-        req = EchoRequest()
-        req.message = data
-        payload = req.SerializeToString()
-        buffer.save(payload, args.subject)
-
-    await js.publish(args.subject, payload)
-    print(f"Published on [{args.subject}] : '{payload.decode()}'")
-
-    buffer.remove(args.subject)
+    await send_message(js, data, args.subject)
 
     await js.purge_stream(current_user)
     await js.delete_stream(current_user)
