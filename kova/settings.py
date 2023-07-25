@@ -114,6 +114,10 @@ class Settings(BaseSettings):
 
     nsc_api: str = "http://localhost:4000"
 
+    buffer_database_file: str = Field(
+        default_factory=_get_default_temp_directory
+    )
+
     sentry_dsn: HttpUrl | None = None
 
 
