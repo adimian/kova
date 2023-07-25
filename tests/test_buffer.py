@@ -14,7 +14,7 @@ def test_buffer_can_save_and_get_message():
 def test_buffer_can_save_and_remove_message():
     b = Buffer(subject="test.greeting")
     name = b.save(b"hello there")
-    b.remove(name)
+    b.delete_message(name)
     assert b.get() is None
 
 
@@ -53,3 +53,17 @@ def test_buffer_object_must_be_bytes():
     b = Buffer(subject="test.greeting")
     with pytest.raises(ValueError):
         b.save("hi")
+
+
+def test_buffer_can_not_delete_message_not_exist():
+    b = Buffer(subject="test.greeting")
+    with pytest.raises(ValueError):
+        b.delete_message("test")
+
+
+def test_buffer_remove_new_element():
+    b = Buffer(subject="test.greeting")
+    b.save(b"hi")
+    b.save(b"hello")
+    b.remove()
+    assert b.get() == b"hi"

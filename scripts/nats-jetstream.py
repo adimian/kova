@@ -62,7 +62,7 @@ async def send_message(jetstream, data: str, subject: str):
         await jetstream.publish(subject, payload)
         print(f"Published on [{subject}] : '{payload.decode()}'")
 
-        buffer.remove(name_file)
+        buffer.delete_message(name_file)
     else:
         await jetstream.publish(subject, payload)
         print(f"Published on [{subject}] : '{payload.decode()}'")

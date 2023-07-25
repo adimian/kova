@@ -25,7 +25,7 @@ class Buffer(Dependable):
             Path(tempfile.gettempdir()) / "messages" / subject
         ).as_posix()
 
-    def save(self, message: bytes):
+    def save(self, message: bytes) -> str:
 
         if not isinstance(message, bytes):
             raise ValueError("value must be of type bytes")
@@ -67,9 +67,23 @@ class Buffer(Dependable):
                     messages.append(message)
             return messages
 
-    def remove(self, name: str):
-        os.remove(Path(self._path) / f"{name}.bin")
-        logger.debug("Message sent and removed from buffer")
+    def delete_message(self, name: str):
+        if not os.path.exists(Path(self._path) / f"{name}.bin"):
+            raise ValueError("File doesn't exist")
+        else:
+            os.remove(Path(self._path) / f"{name}.bin")
+            logger.debug("Message removed from buffer")
+
+    def remove(self):
+        files_list = os.listdir(Path(self._path))
+        if not files_list:
+            logger.debug("No messages in buffer")
+        else:
+            files_list.reverse()
+            for file in files_list:
+                if file.endswith(".bin"):
+                    os.remove(Path(self._path) / file)
+                    return None
 
 
 Dependable.register(Buffer)
