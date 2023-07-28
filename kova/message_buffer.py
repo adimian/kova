@@ -9,6 +9,22 @@ from kova.settings import get_settings
 from kova.ulid_types import ULID
 
 
+class DB_connection(object):
+    def __init__(self, path):
+        try:
+            self.connection = sqlite3.connect(path)
+            logger.debug("SQLite Connection opened")
+        except sqlite3.Error as error:
+            logger.error("Error occurred - ", error)
+
+    def __enter__(self):
+        return self.connection
+
+    def __exit__(self, type, value, traceback):
+        self.connection.close()
+        logger.debug("SQLite Connection closed")
+
+
 class Buffer(Dependable):
     @classmethod
     def get_instance(cls):
@@ -17,156 +33,137 @@ class Buffer(Dependable):
     def __init__(self, subject: str):
         settings = get_settings()
 
-        self._path = Path(settings.buffer_database_file) / "sql.db"
+        self._path = Path(settings.buffer_database_file) / "buffer.db"
         self.subject = subject.replace(".", "_")
 
-        try:
-            connexion = sqlite3.connect(self._path)
-            cursor = connexion.cursor()
+        with DB_connection(self._path) as connection:
+            cursor = connection.cursor()
             logger.debug("Buffer DB init")
 
             cursor.execute(
                 f"""CREATE TABLE IF NOT EXISTS {self.subject}
-                (name VARCHAR(255), message VARCHAR(255))"""
+                (id CHAR(128), message VARCHAR(255))"""
             )
 
             cursor.close()
-
-            connexion.close()
-            logger.debug("SQLite Connection closed")
-
-        except sqlite3.Error as error:
-            logger.error("Error occurred - ", error)
-
-    def _create_connexion(self):
-        connexion = None
-        try:
-            connexion = sqlite3.connect(self._path)
-        except sqlite3.Error as error:
-            logger.error("Error occurred - ", error)
-
-        return connexion
 
     def save(self, message: bytes) -> str:
         if not isinstance(message, bytes):
             raise TypeError("value must be of type bytes")
 
-        name = ULID()
+        id = ULID()
 
-        connexion = self._create_connexion()
-        cursor = connexion.cursor()
+        with DB_connection(self._path) as connection:
+            cursor = connection.cursor()
 
-        cursor.execute(
-            f"""
-            INSERT INTO {self.subject}
-            (name, message)
-            VALUES (?,?)""",
-            (str(name), message),
-        )
-
-        connexion.commit()
-        logger.debug("Message saved in buffer")
-
-        cursor.close()
-        connexion.close()
-
-        return str(name)
-
-    def get(self) -> bytes | None:
-        connexion = self._create_connexion()
-        cursor = connexion.cursor()
-
-        requete = cursor.execute(
-            f"""
-            SELECT name, message FROM {self.subject} ORDER BY name ASC
-        """
-        )
-
-        result = requete.fetchone()
-
-        if result is None:
-            message = None
-        else:
-            message = result[1]
             cursor.execute(
                 f"""
-                DELETE FROM {self.subject} WHERE name LIKE ?
-            """,
-                (result[0],),
+                INSERT INTO {self.subject}
+                (id, message)
+                VALUES (?,?)""",
+                (str(id), message),
             )
 
-            connexion.commit()
-            logger.debug("Message fetched from buffer")
+            connection.commit()
+            logger.debug("Message saved in buffer")
 
-        cursor.close()
-        connexion.close()
+            cursor.close()
+
+        return str(id)
+
+    def get(self) -> bytes | None:
+        with DB_connection(self._path) as connection:
+            cursor = connection.cursor()
+
+            request = cursor.execute(
+                f"""
+                SELECT id, message FROM {self.subject} ORDER BY id ASC
+            """
+            )
+
+            result = request.fetchone()
+
+            if result is None:
+                message = None
+            else:
+                message = result[1]
+                cursor.execute(
+                    f"""
+                    DELETE FROM {self.subject} WHERE id = ?
+                """,
+                    (result[0],),
+                )
+
+                connection.commit()
+                logger.debug("Message fetched from buffer")
+
+            cursor.close()
 
         return message
 
     def get_all(self) -> List[bytes] | None:
-        connexion = self._create_connexion()
-        connexion.row_factory = lambda cursor, row: row[0]
-        cursor = connexion.cursor()
+        with DB_connection(self._path) as connection:
+            connection.row_factory = lambda cursor, row: row[0]
+            cursor = connection.cursor()
 
-        requete = cursor.execute(
-            f"""
-            SELECT message FROM {self.subject} ORDER BY name ASC
-        """
-        )
+            request = cursor.execute(
+                f"""
+                SELECT message FROM {self.subject} ORDER BY id ASC
+            """
+            )
 
-        messages = requete.fetchall()
-        logger.debug("Message fetched from buffer")
+            messages = request.fetchall()
+            logger.debug("Message fetched from buffer")
 
-        cursor.execute(
-            f"""
-            DELETE FROM {self.subject}
-        """
-        )
+            cursor.execute(
+                f"""
+                DELETE FROM {self.subject}
+            """
+            )
 
-        connexion.commit()
+            connection.commit()
 
-        cursor.close()
-        connexion.close()
+            cursor.close()
 
         return messages
 
-    def delete_message(self, name: str):
-        connexion = self._create_connexion()
-        cursor = connexion.cursor()
+    def delete_message(self, id: str):
+        with DB_connection(self._path) as connection:
+            cursor = connection.cursor()
 
-        cursor.execute(f"SELECT * FROM {self.subject} WHERE name = ?", (name,))
-        data = cursor.fetchone()
-        if data is None:
-            raise ValueError(f"There is no message named {name}")
+            cursor.execute(
+                f"SELECT message FROM {self.subject} WHERE id = ?", (id,)
+            )
+            data = cursor.fetchone()
+            if data is None:
+                raise ValueError(f"There is no message named {id}")
 
-        cursor.execute(
-            f"""
-            DELETE FROM {self.subject} WHERE name LIKE ?
-        """,
-            (name,),
-        )
+            cursor.execute(
+                f"""
+                DELETE FROM {self.subject} WHERE id = ?
+            """,
+                (id,),
+            )
 
-        connexion.commit()
-        logger.debug("Message deleted from buffer")
+            connection.commit()
+            logger.debug("Message deleted from buffer")
 
-        cursor.close()
-        connexion.close()
+            cursor.close()
 
     def remove(self):
-        connexion = self._create_connexion()
-        cursor = connexion.cursor()
+        with DB_connection(self._path) as connection:
+            cursor = connection.cursor()
 
-        cursor.execute(
-            f"""
-            DELETE FROM {self.subject} ORDER BY name DESC LIMIT 1
-        """
-        )
+            cursor.execute(
+                f"""
+                DELETE FROM {self.subject} ORDER BY id DESC LIMIT 1
+            """
+            )
 
-        connexion.commit()
-        logger.debug("Message deleted from buffer")
+            connection.commit()
+            logger.debug("Message deleted from buffer")
 
-        cursor.close()
-        connexion.close()
+            cursor.close()
 
 
 Dependable.register(Buffer)
