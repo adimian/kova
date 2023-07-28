@@ -10,6 +10,7 @@ nav:
         - Client: 'client.md'
         - Router: 'router.md'
         - Cache: 'cache.md'
+        - Persistence: 'persistence.md'
     - About:
         - Authors: 'authors.md'
         - License: 'license.md'

@@ -14,7 +14,7 @@
     * Identified echo : Dialogue between an identified client and the applicative server
     * Caching echo : Dialogue between a client and a server, the message is cached for 5s
     * Ping Pong : Conversation between 2 clients
-
+    * Sending files : Use of MinIO to send images and modify them in the applicative server
 
 ## Authentication service
 
@@ -35,3 +35,10 @@
 
 !!! note
     You can change the default file in which the users keys and credentials are saved through the `NscSettings`.
+
+## Persistent messaging
+
+- NATS Jetstream is a service that allows server side persistence once enabled on the NATS server
+- The Buffer allows for client side persistence by saving unsent messages in case of errors (see [Persistence example](persistence.md) for further details)
+- Some client examples :
+    * Stream echo : Dialogue between an identified client and the applicative server using all persistence features
