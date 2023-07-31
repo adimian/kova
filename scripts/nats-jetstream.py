@@ -52,20 +52,17 @@ def show_usage_and_die():
 
 async def send_message(jetstream, data: str, subject: str):
     buffer = Buffer(subject=subject)
-    payload = buffer.get()
-    if payload is None:
-        req = EchoRequest()
-        req.message = data
-        payload = req.SerializeToString()
-        name_file = buffer.save(payload)
 
-        await jetstream.publish(subject, payload)
-        print(f"Published on [{subject}] : '{payload.decode()}'")
+    req = EchoRequest()
+    req.message = data
+    payload = req.SerializeToString()
+    buffer.save(payload)
 
-        buffer.delete_message(name_file)
-    else:
-        await jetstream.publish(subject, payload)
+    message = buffer.get()
+    while message is not None:
+        await jetstream.publish(subject, message)
         print(f"Published on [{subject}] : '{payload.decode()}'")
+        message = buffer.get()
 
 
 async def run():
