@@ -9,7 +9,7 @@ from kova.settings import get_settings
 from kova.ulid_types import ULID
 
 
-class DB_connection(object):
+class DBConnection(object):
     def __init__(self, path):
         try:
             self.connection = sqlite3.connect(path)
@@ -36,7 +36,7 @@ class Buffer(Dependable):
         self._path = Path(settings.buffer_database_file) / "buffer.db"
         self.subject = subject.replace(".", "_")
 
-        with DB_connection(self._path) as connection:
+        with DBConnection(self._path) as connection:
             cursor = connection.cursor()
             logger.debug("Buffer DB init")
 
@@ -53,7 +53,7 @@ class Buffer(Dependable):
 
         id = ULID()
 
-        with DB_connection(self._path) as connection:
+        with DBConnection(self._path) as connection:
             cursor = connection.cursor()
 
             cursor.execute(
@@ -72,7 +72,7 @@ class Buffer(Dependable):
         return str(id)
 
     def get(self) -> bytes | None:
-        with DB_connection(self._path) as connection:
+        with DBConnection(self._path) as connection:
             cursor = connection.cursor()
 
             request = cursor.execute(
@@ -102,7 +102,7 @@ class Buffer(Dependable):
         return message
 
     def get_all(self) -> List[bytes] | None:
-        with DB_connection(self._path) as connection:
+        with DBConnection(self._path) as connection:
             connection.row_factory = lambda cursor, row: row[0]
             cursor = connection.cursor()
 
@@ -128,7 +128,7 @@ class Buffer(Dependable):
         return messages
 
     def delete_message(self, id: str):
-        with DB_connection(self._path) as connection:
+        with DBConnection(self._path) as connection:
             cursor = connection.cursor()
 
             cursor.execute(
@@ -151,7 +151,7 @@ class Buffer(Dependable):
             cursor.close()
 
     def remove(self):
-        with DB_connection(self._path) as connection:
+        with DBConnection(self._path) as connection:
             cursor = connection.cursor()
 
             cursor.execute(
