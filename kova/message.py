@@ -1,6 +1,10 @@
 from kova.our_types import Dependable
 
 
+class ReplyNameException(Exception):
+    pass
+
+
 class Publish(Dependable):
     def __call__(self, subject: str, payload: bytes):
         raise NotImplementedError("you should not see this")
@@ -36,3 +40,24 @@ class Reply(Dependable):
 
 
 Dependable.register(Reply)
+
+
+class ReplyStream(Dependable):
+    def __call__(self, payload: bytes):
+        raise NotImplementedError("you should not see this")
+
+    @classmethod
+    def get_instance(cls, router, msg, **kwargs):
+        if msg.reply:
+
+            async def reply(payload: bytes):
+                subject = f"{msg.subject}.reply"
+                p = Publish().get_instance(router=router)
+                await p(subject=subject, payload=payload)
+
+            return reply
+        else:
+            return None
+
+
+Dependable.register(ReplyStream)
