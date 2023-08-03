@@ -15,7 +15,7 @@
 
 import { connect, JSONCodec, credsAuthenticator } from "/node_modules/nats.ws/esm/nats.js";
 
-const me = Date.now();
+const me = window.localStorage.getItem("user") + '-'+ Date.now().toString();
 
 const creds = ``;
 
@@ -34,7 +34,7 @@ const init = async function () {
   // to use WSS or not.
   console.log(creds)
   const conn = await connect(
-    { servers: "localhost",
+    { servers: window.localStorage.getItem("server"),
       authenticator: credsAuthenticator(new TextEncoder().encode(creds)),
      },
   );
@@ -52,7 +52,7 @@ const init = async function () {
 
   // the chat application listens for messages sent under the subject 'chat'
   (async () => {
-    const chat = conn.subscribe("testbis.chat");
+    const chat = conn.subscribe(`${window.localStorage.getItem("user")}.chat`);
     for await (const m of chat) {
       const jm = jc.decode(m.data);
       addEntry(
@@ -63,7 +63,7 @@ const init = async function () {
 
   // when a new browser joins, the joining browser publishes an 'enter' message
   (async () => {
-    const enter = conn.subscribe("testbis.enter");
+    const enter = conn.subscribe(`${window.localStorage.getItem("user")}.enter`);
     for await (const m of enter) {
       const jm = jc.decode(m.data);
       addEntry(`${jm.id} entered.`);
@@ -71,7 +71,7 @@ const init = async function () {
   })().then();
 
   (async () => {
-    const exit = conn.subscribe("testbis.exit");
+    const exit = conn.subscribe(`${window.localStorage.getItem("user")}.exit`);
     for await (const m of exit) {
       const jm = jc.decode(m.data);
       if (jm.id !== me) {
@@ -81,7 +81,7 @@ const init = async function () {
   })().then();
 
   // we connected, and we publish our enter message
-  conn.publish("testbis.enter", jc.encode({ id: me }));
+  conn.publish(`${window.localStorage.getItem("user")}.enter`, jc.encode({ id: me }));
   return conn;
 };
 
@@ -107,7 +107,7 @@ function send() {
   input = document.getElementById("data");
   const m = input.value;
   if (m !== "" && window.nc) {
-    window.nc.publish("testbis.chat", jc.encode({ id: me, m: m }));
+    window.nc.publish(`${window.localStorage.getItem("user")}.chat`, jc.encode({ id: me, m: m }));
     input.value = "";
   }
   return false;
@@ -116,7 +116,7 @@ function send() {
 // send the exit message
 function exiting() {
   if (window.nc) {
-    window.nc.publish("testbis.exit", jc.encode({ id: me }));
+    window.nc.publish(`${window.localStorage.getItem("user")}.exit`, jc.encode({ id: me }));
   }
 }
 
