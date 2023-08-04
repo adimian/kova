@@ -14,8 +14,10 @@
  */
 
 import { connect, JSONCodec, credsAuthenticator } from "/node_modules/nats.ws/esm/nats.js";
+// TODO : Figure out how to make protobuf messages work
+goog.require('proto.pingpong.PingRequest');
 
-const me = window.localStorage.getItem("user") + '-'+ Date.now().toString();
+const me = window.localStorage.getItem("user");
 
 const creds = ``;
 
@@ -52,11 +54,11 @@ const init = async function () {
 
   // the chat application listens for messages sent under the subject 'chat'
   (async () => {
-    const chat = conn.subscribe(`${window.localStorage.getItem("user")}.chat`);
+    const chat = conn.subscribe(`${window.localStorage.getItem("user")}.ping`);
     for await (const m of chat) {
-      const jm = jc.decode(m.data);
+      const message2 = PingRequest.deserializeBinary(m);
       addEntry(
-        jm.id === me ? `(me): ${jm.m}` : `(${jm.id}): ${jm.m}`,
+        message2.getOrigin() === me ? `(me): ${message2.getMessage()}` : `(${message2.getOrigin()}): ${message2.getMessage()}`,
       );
     }
   })().then();
@@ -107,7 +109,12 @@ function send() {
   input = document.getElementById("data");
   const m = input.value;
   if (m !== "" && window.nc) {
-    window.nc.publish(`${window.localStorage.getItem("user")}.chat`, jc.encode({ id: me, m: m }));
+    var message = proto.pingpong.PingRequest();
+    message.setDestination("testbis");
+    message.setOrigin(me);
+    message.setMessage(m);
+    var bytes = message.serializeBinary();
+    window.nc.publish(`${window.localStorage.getItem("user")}.ping`, bytes);
     input.value = "";
   }
   return false;
