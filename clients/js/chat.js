@@ -14,8 +14,6 @@
  */
 
 import { connect, JSONCodec, credsAuthenticator } from "/node_modules/nats.ws/esm/nats.js";
-// TODO : Figure out how to make protobuf messages work
-goog.require('proto.pingpong.PingRequest');
 
 const me = window.localStorage.getItem("user");
 
@@ -34,7 +32,6 @@ const init = async function () {
   // if the connection doesn't resolve, an exception is thrown
   // a real app would allow configuring the hostport and whether
   // to use WSS or not.
-  console.log(creds)
   const conn = await connect(
     { servers: window.localStorage.getItem("server"),
       authenticator: credsAuthenticator(new TextEncoder().encode(creds)),
@@ -54,18 +51,25 @@ const init = async function () {
 
   // the chat application listens for messages sent under the subject 'chat'
   (async () => {
-    const chat = conn.subscribe(`${window.localStorage.getItem("user")}.ping`);
+    const chat = conn.subscribe(`${me}.ping`);
     for await (const m of chat) {
-      const message2 = PingRequest.deserializeBinary(m);
-      addEntry(
-        message2.getOrigin() === me ? `(me): ${message2.getMessage()}` : `(${message2.getOrigin()}): ${message2.getMessage()}`,
-      );
+      protobuf.load("message/pingpong.proto")
+      .then(function(root) {
+         const messageType = root.lookupType("pingpong.PingRequest");
+         const message = messageType.decode(m.data);
+         if (message.origin != me) {
+            addEntry(
+              `(${message.origin}): ${message.message}`,
+            );
+          }
+      });
+
     }
   })().then();
 
   // when a new browser joins, the joining browser publishes an 'enter' message
   (async () => {
-    const enter = conn.subscribe(`${window.localStorage.getItem("user")}.enter`);
+    const enter = conn.subscribe(`${me}.enter`);
     for await (const m of enter) {
       const jm = jc.decode(m.data);
       addEntry(`${jm.id} entered.`);
@@ -73,7 +77,7 @@ const init = async function () {
   })().then();
 
   (async () => {
-    const exit = conn.subscribe(`${window.localStorage.getItem("user")}.exit`);
+    const exit = conn.subscribe(`${me}.exit`);
     for await (const m of exit) {
       const jm = jc.decode(m.data);
       if (jm.id !== me) {
@@ -83,7 +87,7 @@ const init = async function () {
   })().then();
 
   // we connected, and we publish our enter message
-  conn.publish(`${window.localStorage.getItem("user")}.enter`, jc.encode({ id: me }));
+  conn.publish(`${me}.enter`, jc.encode({ id: me }));
   return conn;
 };
 
@@ -109,13 +113,23 @@ function send() {
   input = document.getElementById("data");
   const m = input.value;
   if (m !== "" && window.nc) {
-    var message = proto.pingpong.PingRequest();
-    message.setDestination("testbis");
-    message.setOrigin(me);
-    message.setMessage(m);
-    var bytes = message.serializeBinary();
-    window.nc.publish(`${window.localStorage.getItem("user")}.ping`, bytes);
-    input.value = "";
+    protobuf.load("message/pingpong.proto")
+    .then(function(root) {
+      const messageType = root.lookupType("pingpong.PingRequest");
+      var payload = {
+        // TODO : choice of destination
+        destination: "test",
+        origin: me,
+        message:m
+      };
+      var message = messageType.create(payload);
+      addEntry(
+        message.origin === me ? `(me): ${message.message}` : `(${message.origin}): ${message.message}`,
+      );
+      var buffer = messageType.encode(message).finish();
+      window.nc.publish(`${me}.ping`, buffer);
+      input.value = "";
+    });
   }
   return false;
 }
@@ -123,7 +137,7 @@ function send() {
 // send the exit message
 function exiting() {
   if (window.nc) {
-    window.nc.publish(`${window.localStorage.getItem("user")}.exit`, jc.encode({ id: me }));
+    window.nc.publish(`${me}.exit`, jc.encode({ id: me }));
   }
 }
 

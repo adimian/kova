@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>test-nats chat</title>
+    <title>kova chat</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           crossorigin="anonymous">
 </head>
@@ -11,7 +11,7 @@
 
 <!-- a form for entering messages -->
 <div class="container">
-    <h1>NATS chat</h1>
+    <h1>KOVA chat</h1>
     <input type="text" class="form-control" id="data" placeholder="Message" autocomplete="off"><br/>
     <button id="send" onclick="chat.send()" class="btn btn-primary">Send</button>
 </div>
@@ -20,6 +20,7 @@
 <!-- a place to record messages -->
 <div id="chats" class="container"></div>
 
+<script src="//cdn.jsdelivr.net/npm/protobufjs@7.2.4/dist/protobuf.js"></script>
 <script type="module" src="chat.js"></script>
 </body>
 </html>
