@@ -5,7 +5,8 @@ A client is the code called by users and describe their behavior
 Two examples are included here :
 
 - Nats - Pub client
-- Ping - Pong client
+- Ping - Pong client in Python
+- Chat client in Javascript
 
 ## Connection to NATS server
 
@@ -79,7 +80,7 @@ A client can define a message handler that describes how each messages received 
     print(f"Listening for message on [{args.subject}]")
 ````
 
-##Request / Reply
+## Request / Reply
 A client can request an answer from the applicative server. In this case, it will use the request/reply pattern instead of the publish/subscribe one.
 
 Once again, a message is sent by the client. The applicative server will process it (see [Router example](router.md) for further details) and send back a Response.
@@ -94,3 +95,14 @@ Once again, a message is sent by the client. The applicative server will process
     res = EchoResponse.FromString(response.data)
     print(f"Got response: '{res.message}'")
 ````
+
+## Javascript client
+
+A client written in Javascript that implement a chat system between users.
+Like the Python client seen above, it uses Publish/Subscribe to interact with the server.
+
+This allows for two users logged into the service to chat together as seen bellow.
+![chat client](img/JS Chat.png)
+
+!!! note
+    Javascript client connect to the NATS Server through a websocket connection.
