@@ -16,6 +16,7 @@
 import { connect, JSONCodec, credsAuthenticator } from "/node_modules/nats.ws/esm/nats.js";
 
 const me = window.localStorage.getItem("user");
+const destination = window.localStorage.getItem("destination");
 
 const creds = ``;
 
@@ -32,6 +33,7 @@ const init = async function () {
   // if the connection doesn't resolve, an exception is thrown
   // a real app would allow configuring the hostport and whether
   // to use WSS or not.
+  addDestination()
   const conn = await connect(
     { servers: window.localStorage.getItem("server"),
       authenticator: credsAuthenticator(new TextEncoder().encode(creds)),
@@ -45,7 +47,7 @@ const init = async function () {
   });
   (async () => {
     for await (const s of conn.status()) {
-      addEntry(`Received status update: ${s.type}`);
+      addEntry(`Received status update: ${s.type}`, '#337ab795');
     }
   })().then();
 
@@ -59,7 +61,7 @@ const init = async function () {
          const message = messageType.decode(m.data);
          if (message.origin != me) {
             addEntry(
-              `(${message.origin}): ${message.message}`,
+              `(${message.origin}): ${message.message}`, '#F5F5F5',
             );
           }
       });
@@ -72,7 +74,7 @@ const init = async function () {
     const enter = conn.subscribe(`${me}.enter`);
     for await (const m of enter) {
       const jm = jc.decode(m.data);
-      addEntry(`${jm.id} entered.`);
+      addEntry(`${jm.id} entered.`, '#337ab795');
     }
   })().then();
 
@@ -81,7 +83,7 @@ const init = async function () {
     for await (const m of exit) {
       const jm = jc.decode(m.data);
       if (jm.id !== me) {
-        addEntry(`${jm.id} exited.`);
+        addEntry(`${jm.id} exited.`, '#337ab795');
       }
     }
   })().then();
@@ -94,7 +96,7 @@ const init = async function () {
 init().then((conn) => {
   window.nc = conn;
 }).catch((ex) => {
-  addEntry(`Error connecting to NATS: ${ex}`);
+  addEntry(`Error connecting to NATS: ${ex}`, '#337ab795');
 });
 
 // this is the input field
@@ -117,14 +119,13 @@ function send() {
     .then(function(root) {
       const messageType = root.lookupType("pingpong.PingRequest");
       var payload = {
-        // TODO : choice of destination
-        destination: "test",
+        destination: destination,
         origin: me,
         message:m
       };
       var message = messageType.create(payload);
       addEntry(
-        message.origin === me ? `(me): ${message.message}` : `(${message.origin}): ${message.message}`,
+        message.origin === me ? `(me): ${message.message}` : `(${message.origin}): ${message.message}`, '#337ab750',
       );
       var buffer = messageType.encode(message).finish();
       window.nc.publish(`${me}.ping`, buffer);
@@ -142,8 +143,13 @@ function exiting() {
 }
 
 // add an entry to the document
-function addEntry(s) {
+function addEntry(s, color) {
   const p = document.createElement("pre");
   p.appendChild(document.createTextNode(s));
+  p.style.backgroundColor = color
   document.getElementById("chats").appendChild(p);
+}
+
+function addDestination() {
+  document.getElementById("destination").innerHTML += `from ${me} to ${destination}`;
 }
