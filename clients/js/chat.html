@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>kova chat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          crossorigin="anonymous">
+</head>
+<!-- when the browser exits, we publish a message -->
+<body onunload="chat.exiting()">
+
+<!-- a form for entering messages -->
+<div class="container">
+    <h1>Kova chat</h1>
+    <h2 id="destination"></h2>
+</div>
+<br/>
+
+<!-- a place to record messages -->
+<div id="chats" class="container"></div>
+<div class="container">
+  <input type="text" class="form-control" id="data" placeholder="Message" autocomplete="off"><br/>
+  <button id="send" onclick="chat.send()" class="btn btn-primary">Send</button>
+</div>
+
+<script src="//cdn.jsdelivr.net/npm/protobufjs@7.2.4/dist/protobuf.js"></script>
+<script type="module" src="chat.js"></script>
+</body>
+</html>
