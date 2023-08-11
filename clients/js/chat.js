@@ -15,14 +15,13 @@
 
 import { connect, JSONCodec, credsAuthenticator } from "/node_modules/nats.ws/esm/nats.js";
 
-const me = window.localStorage.getItem("user");
-const destination = window.localStorage.getItem("destination");
-
 const creds = ``;
 
 window.chat = {
   send: send,
   exiting: exiting,
+  modalExit: modalExit,
+  modalInit: modalInit,
 };
 
 // create a decoder, the client is sending JSON
@@ -33,7 +32,9 @@ const init = async function () {
   // if the connection doesn't resolve, an exception is thrown
   // a real app would allow configuring the hostport and whether
   // to use WSS or not.
+  modalInit()
   addDestination()
+  const me = window.localStorage.getItem("user");
   const conn = await connect(
     { servers: window.localStorage.getItem("server"),
       authenticator: credsAuthenticator(new TextEncoder().encode(creds)),
@@ -112,6 +113,8 @@ input.addEventListener("keyup", (e) => {
 
 // send a message if user typed one
 function send() {
+  const me = window.localStorage.getItem("user");
+  const destination = window.localStorage.getItem("destination");
   input = document.getElementById("data");
   const m = input.value;
   if (m !== "" && window.nc) {
@@ -151,5 +154,31 @@ function addEntry(s, color) {
 }
 
 function addDestination() {
-  document.getElementById("destination").innerHTML += `from ${me} to ${destination}`;
+  const me = window.localStorage.getItem("user");
+  const destination = window.localStorage.getItem("destination");
+  document.getElementById("destination").innerHTML = `from ${me ? me : "null"} to ${destination ? destination : "null"}`;
+}
+
+function modalInit(){
+  const me = window.localStorage.getItem("user");
+  const destination = window.localStorage.getItem("destination");
+  const server = window.localStorage.getItem("server");
+  if (me != null){
+    document.getElementById("user").value = me
+  }
+  if (destination != null){
+    document.getElementById("user-destination").value = destination
+  }
+  if (server != null){
+    document.getElementById("server").value = server
+  }
+}
+
+function modalExit(){
+  window.localStorage.user = document.getElementById("user").value;
+  window.localStorage.destination = document.getElementById("user-destination").value;
+  window.localStorage.server = document.getElementById("server").value;
+
+  init()
+  return false;
 }
