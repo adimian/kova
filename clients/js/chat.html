@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>kova chat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/protobufjs@7.2.4/dist/protobuf.js"></script>
+    <script type="module" src="chat.js"></script>
+</head>
+<!-- when the browser exits, we publish a message -->
+<body onunload="chat.exiting()">
+
+<script type="text/javascript">
+    $(window).on('load', function() {
+        $('#modalForm').modal('show');
+    });
+</script>
+
+
+<div class="container">
+    <h1>Kova chat</h1>
+    <h2 id="destination" class="pull-left"></h2>
+    <button type="button" class="btn btn-secondary pull-right" data-toggle="modal" data-target="#modalForm" onclick="chat.modalInit()">Configuration</button>
+</div>
+<br/>
+
+<!-- a place to record messages -->
+<div id="chats" class="container"></div>
+
+<!-- a form for entering messages -->
+<div class="container">
+  <input type="text" class="form-control" id="data" placeholder="Message" autocomplete="off"><br/>
+  <button id="send" onclick="chat.send()" class="btn btn-primary">Send</button>
+</div>
+
+<div class="modal fade" id="modalForm" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Info about message</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="server">Server address</label>
+            <input type="text" class="form-control" id="server" aria-describedby="serverHelp" placeholder="Enter server address">
+            <small id="serverHelp" class="form-text text-muted">The address of the NATS server.</small>
+          </div>
+          <div class="form-group">
+            <label for="user">Username</label>
+            <input type="text" class="form-control" id="user" placeholder="Enter your user name">
+          </div>
+          <div class="form-group">
+            <label for="user-destination">Destination</label>
+            <input type="text" class="form-control" id="user-destination" placeholder="The user you want to chat with">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="chat.modalExit()" data-dismiss="modal">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
