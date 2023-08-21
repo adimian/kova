@@ -34,7 +34,7 @@ $ brew untap nats-io/nats-tools
 To configurate the Authentication in the `kova` service, use the `nsc` service at the `/new-setup` endpoint
 
 !!! warning
-    After creating a NATS Operator, set it up by adding your `operator.jwt` on your NATS server in the `server.conf` file.
+    After creating a NATS Operator, set it up by adding your `operator.jwt` on your NATS server in the `server.conf` file. An example of this configuration is available on GitHub.
 
 ## Running the applicative server
 
