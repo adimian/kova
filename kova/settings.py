@@ -111,6 +111,7 @@ class Settings(BaseSettings):
     capture_emails: bool = False
 
     nats_servers: str | list[str] = ["nats://localhost:4222"]
+    server_creds: str | None
 
     nsc_api: str = "http://localhost:4000"
 

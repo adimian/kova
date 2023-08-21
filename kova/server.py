@@ -68,7 +68,7 @@ class Server:
             "closed_cb": closed_cb,
             "reconnected_cb": reconnected_cb,
             "servers": self.settings.nats_servers,
-            "user_credentials": opt.creds,
+            "user_credentials": self.settings.server_creds,
         }
 
         await self.queue.connect(**options)
