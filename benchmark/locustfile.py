@@ -51,9 +51,7 @@ class MyUser(User):
         return {
             "url": random.choice(
                 [
-                    "nats://127.0.0.1:4222",
-                    "nats://127.0.0.1:5222",
-                    "nats://127.0.0.1:6222",
+                    "nats://localhost:4222",
                 ]
             ),
             "socket_timeout": 5,
@@ -62,7 +60,9 @@ class MyUser(User):
     @task
     def task1(self):
         with OnRequest(
-            environment=self.environment, identifier="foo", request_type="PONG"
+            environment=self.environment,
+            identifier="pong",
+            request_type="PONG",
         ):
 
             def ping_handler(msg):
@@ -77,7 +77,7 @@ class MyUser(User):
                     self.client.publish("test2.ping", payload)
 
             try:
-                self.client.subscribe("test2.ping", cb=ping_handler)
+                self.client.subscribe("test2.ping", callback=ping_handler)
             except (OSError, TimeoutError, BrokenPipeError):
                 self.client.connect()
                 raise
@@ -85,7 +85,9 @@ class MyUser(User):
     @task
     def task2(self):
         with OnRequest(
-            environment=self.environment, identifier="foo", request_type="PING"
+            environment=self.environment,
+            identifier="ping",
+            request_type="PING",
         ):
 
             req = PingRequest()
@@ -101,8 +103,8 @@ class MyUser(User):
                 )
 
             try:
-                self.client.publish("test.ping", payload)
-                self.client.subscribe("test.ping", cb=pong_handler)
+                self.client.publish(subject="test.ping", payload=payload)
+                self.client.subscribe("test.ping", callback=pong_handler)
             except (OSError, TimeoutError, BrokenPipeError):
                 self.client.connect()
                 raise
